@@ -62,7 +62,7 @@ tasks:
 
   build-image:
     desc: Build image
-    deps: [crds]
+    deps: [tag, crds]
     cmds:
       - "{{ .CONTAINER_RUNTIME_CMD }} build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }} ."
       - "{{ .CONTAINER_RUNTIME_CMD }} push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }}"
