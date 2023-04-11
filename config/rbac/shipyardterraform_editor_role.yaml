@@ -1,0 +1,31 @@
+# permissions for end users to edit shipyardterraforms.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: shipyardterraform-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: shipyard-operator
+    app.kubernetes.io/part-of: shipyard-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: shipyardterraform-editor-role
+rules:
+- apiGroups:
+  - shipyard.sthings.tiab.ssc.sva.de
+  resources:
+  - shipyardterraforms
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - shipyard.sthings.tiab.ssc.sva.de
+  resources:
+  - shipyardterraforms/status
+  verbs:
+  - get
