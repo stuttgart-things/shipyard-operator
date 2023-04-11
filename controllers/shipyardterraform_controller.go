@@ -35,7 +35,7 @@ import (
 	"github.com/hashicorp/hc-install/product"
 	"github.com/hashicorp/hc-install/releases"
 
-	// "github.com/hashicorp/terraform-exec/tfexec"
+	//"github.com/hashicorp/terraform-exec/tfexec"
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 )
 
@@ -113,6 +113,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// TERRAFORM INIT
 	log.Info("⚡️ Initalize terraform ⚡️")
+
+	tfInitOptions = append(tfInitOptions, tfexec.Upgrade(true))
 
 	for _, backendParameter := range backend {
 		tfInitOptions = append(tfInitOptions, tfexec.BackendConfig(strings.TrimSpace(backendParameter)))
