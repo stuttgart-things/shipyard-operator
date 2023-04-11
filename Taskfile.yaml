@@ -42,15 +42,6 @@ tasks:
     cmds:
       - '{{ .CONTROLLER_GEN_CMD }} rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases'
 
-  deploy-crds:
-    desc: Generate and deploy crds
-    deps: [crds]
-    cmds:
-      - '{{ .KUSTOMIZE_CMD }} build config/crd > /tmp/{{ .PROJECT_NAME }}-crds.yaml'
-      - kubectl get nodes
-      - sleep 5
-      - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-crds.yaml
-
   tag:
     desc: commit, push & tag the module
     deps: [lint]
@@ -74,3 +65,22 @@ tasks:
     cmds:
       - "{{ .CONTAINER_RUNTIME_CMD }} build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }} ."
       - "{{ .CONTAINER_RUNTIME_CMD }} push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }}"
+      - cd config/manager && {{ .KUSTOMIZE_CMD }} edit set image controller={{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }}
+
+  deploy-crds:
+    desc: Generate and deploy crds
+    deps: [crds]
+    cmds:
+      - '{{ .KUSTOMIZE_CMD }} build config/crd > /tmp/{{ .PROJECT_NAME }}-crds.yaml'
+      - kubectl get nodes
+      - sleep 5
+      - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-crds.yaml
+
+  deploy:
+    desc: Build image & deploy
+    deps: [deploy-crds, build-image]
+    cmds:
+      - '{{ .KUSTOMIZE_CMD }} build config/default > /tmp/{{ .PROJECT_NAME }}-deployment.yaml'
+      - kubectl get nodes
+      - sleep 5
+      - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-deployment.yaml
