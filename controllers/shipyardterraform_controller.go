@@ -79,9 +79,7 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	moduleParameter := make(map[string]interface{})
 
 	for _, s := range module {
-
 		keyValue := strings.Split(s, "=")
-
 		moduleParameter[keyValue[0]] = keyValue[1]
 	}
 
@@ -90,8 +88,10 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	fmt.Println("TF-VERSION", tfVersion)
 	fmt.Println("MODULE", moduleParameter)
 
-	b := sthingsBase.ReadFileToVariable("terraform/" + template)
-	fmt.Println(string(b))
+	moduleCallTemplate := sthingsBase.ReadFileToVariable("terraform/" + template)
+
+	renderedModuleCall, _ := sthingsBase.RenderTemplateInline(string(moduleCallTemplate), "missingkey=zero", "{{", "}}", moduleParameter)
+	fmt.Println(string(renderedModuleCall))
 
 	return ctrl.Result{}, nil
 }
