@@ -35,9 +35,8 @@ spec:
           spec:
             description: ShipyardTerraformSpec defines the desired state of ShipyardTerraform
             properties:
-              foo:
-                description: Foo is an example field of ShipyardTerraform. Edit shipyardterraform_types.go
-                  to remove/update
+              terraform-version:
+                default: 1.4.4
                 type: string
             type: object
           status:

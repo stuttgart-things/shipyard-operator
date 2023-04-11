@@ -9,4 +9,4 @@ metadata:
     app.kubernetes.io/created-by: shipyard-operator
   name: shipyardterraform-sample
 spec:
-  # TODO(user): Add fields here
+  terraform-version: 1.4.4

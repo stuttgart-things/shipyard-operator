@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: eu.gcr.io/stuttgart-things/shipyard-operator
-  newTag: 23.0411.0917-v0.1.4
+  newTag: 23.0411.1047-v0.1.6

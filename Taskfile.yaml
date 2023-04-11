@@ -84,3 +84,4 @@ tasks:
       - kubectl get nodes
       - sleep 5
       - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-deployment.yaml
+      - kubectl apply -f ./config/samples/shipyard_v1beta1_shipyardterraform.yaml
