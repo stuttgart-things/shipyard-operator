@@ -31,6 +31,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/hashicorp/go-version"
+	"github.com/hashicorp/hc-install/product"
+	"github.com/hashicorp/hc-install/releases"
+
+	// "github.com/hashicorp/terraform-exec/tfexec"
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 )
 
