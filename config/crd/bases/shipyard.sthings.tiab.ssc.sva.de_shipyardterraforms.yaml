@@ -44,9 +44,14 @@ spec:
               terraform-version:
                 default: 1.4.4
                 type: string
+              variables:
+                items:
+                  type: string
+                type: array
             required:
             - module
             - template
+            - variables
             type: object
           status:
             description: ShipyardTerraformStatus defines the observed state of ShipyardTerraform

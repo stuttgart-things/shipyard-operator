@@ -32,6 +32,9 @@ type ShipyardTerraformSpec struct {
 	TerraformVersion string   `json:"terraform-version,omitempty"`
 	Module           []string `json:"module"`
 	Template         string   `json:"template"`
+	Variables        []string `json:"variables"`
+	// Secrets          []string `json:"secrets"`
+	// Backend          []string `json:"backend,omitempty"`
 }
 
 // ShipyardTerraformStatus defines the observed state of ShipyardTerraform

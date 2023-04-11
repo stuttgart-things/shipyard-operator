@@ -1,14 +1,25 @@
 apiVersion: shipyard.sthings.tiab.ssc.sva.de/v1beta1
 kind: ShipyardTerraform
 metadata:
+  name: shipyardterraform-sample
   labels:
     app.kubernetes.io/name: shipyardterraform
-    app.kubernetes.io/instance: shipyardterraform-sample
+    # app.kubernetes.io/managed-by: kustomize
+    # app.kubernetes.io/instance: shipyardterraform-sample
     app.kubernetes.io/part-of: shipyard-operator
-    app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: shipyard-operator
-  name: shipyardterraform-sample
 spec:
+  variables:
+    - vsphere_vm_name="shipyard-operator3"
+    - vm_count=1
+    - vm_num_cpus=6
+    - vm_memory=8192
+    - vsphere_vm_template="/LabUL/host/Cluster01/10.31.101.40/ubuntu22"
+    - vsphere_vm_folder_path="phermann/rancher-things"
+    - vsphere_network="/LabUL/host/Cluster01/10.31.101.41/MGMT-10.31.101"
+    - vsphere_datastore="/LabUL/host/Cluster01/10.31.101.41/UL-ESX-SAS-01"
+    - vsphere_resource_pool="/LabUL/host/Cluster01/Resources"
+    - vsphere_datacenter="LabUL"
   terraform-version: 1.4.4
   template: vsphere-vm
   module:

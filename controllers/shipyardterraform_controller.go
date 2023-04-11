@@ -71,9 +71,12 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 	}
 
+	// GET VARIABLES FROM CR
 	var tfVersion string = terraformCR.Spec.TerraformVersion
 	var template string = terraformCR.Spec.Template
 	var module []string = terraformCR.Spec.Module
+	var variables []string = terraformCR.Spec.Variables
+	var workingDir = "/tmp/tf/" + req.Name + "/"
 
 	// GET MODULE PARAMETER
 	moduleParameter := make(map[string]interface{})
@@ -90,8 +93,14 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	moduleCallTemplate := sthingsBase.ReadFileToVariable("terraform/" + template)
 
+	log.Info("⚡️ Rendering tf config ⚡️")
 	renderedModuleCall, _ := sthingsBase.RenderTemplateInline(string(moduleCallTemplate), "missingkey=zero", "{{", "}}", moduleParameter)
 	fmt.Println(string(renderedModuleCall))
+
+	log.Info("⚡️ Creating working dir and project files ⚡️", workingDir)
+	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
+	sthingsBase.StoreVariableInFile(workingDir+req.Name+".tf", string(renderedModuleCall))
+	sthingsBase.StoreVariableInFile(workingDir+req.Name+"/terraform.tfvars", strings.Join(variables, "\n"))
 
 	return ctrl.Result{}, nil
 }
