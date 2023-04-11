@@ -1,0 +1,155 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: terraform-templates
+  namespace: shipyard-operator-system
+data:
+  vsphere-vm: |
+    module "{{ .moduleName }}" {
+      vm_count = var.vm_count
+      vsphere_vm_name = var.vsphere_vm_name
+      vm_num_cpus = var.vm_num_cpus
+      vm_memory = var.vm_memory
+      vm_disk_size = var.vm_disk_size
+      firmware = var.firmware
+      vsphere_vm_folder_path = var.vsphere_vm_folder_path
+      vsphere_datacenter = var.vsphere_datacenter
+      vsphere_datastore = var.vsphere_datastore
+      vsphere_resource_pool = var.vsphere_resource_pool
+      vsphere_network = var.vsphere_network
+      vsphere_vm_template = var.vsphere_vm_template
+      vm_ssh_user = var.vm_ssh_user
+      vm_ssh_password = var.vm_ssh_password
+      bootstrap = var.bootstrap
+      source = "{{ .moduleSourceUrl }}"
+      annotation = var.annotation
+    }
+
+    terraform {
+      backend "s3" {
+        endpoint = "{{ .backendEndpoint }}"
+        key = "{{ .backendKey }}"
+        region = "{{ .backendRegion }}"
+        bucket = "{{ .backendBucket }}"
+        skip_credentials_validation = true
+        skip_metadata_api_check = true
+        skip_region_validation = true
+        force_path_style = true
+      }
+
+      required_providers {
+        {{ .tfProviderName }} = {
+          source = "{{ .tfProviderSource }}"
+          version = ">= {{ .tfProviderVersion }}"
+        }
+      }
+
+      required_version = ">= {{ .tfVersion }}"
+    }
+
+    provider "vsphere" {
+      user                 = var.vsphere_user
+      password             = var.vsphere_password
+      vsphere_server       = var.vsphere_server
+      allow_unverified_ssl = true
+    }
+
+    variable "vm_disk_size" {
+      default     = "128"
+      description = "disk size"
+    }
+
+    variable "vsphere_vm_name" {
+      default = false
+      description = "name of to be created vm"
+    }
+
+    variable "annotation" {
+      default     = "VSPHERE-VM BUILD w/ SHIPYARD-OPERATOR FOR STUTTGART-THINGS"
+      description = "vcenter annotation/note"
+    }
+
+    variable "bootstrap" {
+      default     = ["echo STUTTGART-THINGS"]
+      description = "possibility to define bootstrap commands"
+    }
+
+    variable "firmware" {
+      default     = "bios"
+      description = "firmware"
+    }
+
+    variable "vm_count" {
+      default     = 1
+      description = "count of to be build vms"
+    }
+
+    variable "vm_num_cpus" {
+      default     = 8
+      description = "count of cpu cores"
+    }
+
+    variable "vm_memory" {
+      default     = 8192
+      description = "count of ram in mb"
+    }
+
+    variable "vsphere_server" {
+      default     = false
+      description = "vsphere server"
+    }
+
+    variable "vsphere_user" {
+      default     = false
+      description = "password of vsphere user"
+    }
+
+    variable "vsphere_password" {
+      default     = false
+      description = "password of vsphere user"
+    }
+
+    variable "vm_ssh_user" {
+      default     = false
+      description = "username of ssh user for vm"
+    }
+
+    variable "vm_ssh_password" {
+      default     = false
+      description = "password of ssh user for vm"
+    }
+
+    variable "vsphere_datastore" {
+      default     = false
+      description = "name of vsphere datastore"
+    }
+
+    variable "vsphere_datacenter" {
+      default     = false
+      description = "name of vsphere datacenter"
+    }
+
+    variable "vsphere_resource_pool" {
+      default     = false
+      description = "name of vsphere resource pool"
+    }
+
+    variable "vsphere_network" {
+      default     = false
+      description = "name of vsphere network"
+    }
+
+    variable "vsphere_vm_template" {
+      default     = false
+      description = "name/path of vsphere vm template"
+    }
+
+    variable "vsphere_vm_folder_path" {
+      default     = false
+      description = "folder path of to be created vm on datacenter"
+    }
+
+    output "{{ .moduleName }}_ip" {
+      value = module.{{ .moduleName }}.ip
+    }
