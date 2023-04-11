@@ -1,6 +1,12 @@
 ---
 version: "3"
 vars:
+  REGISTRY: eu.gcr.io
+  REPOSITORY_NAME: stuttgart-things
+  MODULE: github.com/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}
+  CONTAINER_RUNTIME_CMD: sudo nerdctl
+  CONTROLLER_GEN_CMD: "./bin/controller-gen"
+  KUSTOMIZE_CMD: kustomize
   PROJECT_NAME:
     sh: pwd | grep -o "[^/]*$"
   MAJOR:
@@ -13,13 +19,6 @@ vars:
     sh: git describe --tags --abbrev=0
   DATE:
     sh: date +"%y.%m%d.%H%M"
-
-  REGISTRY: eu.gcr.io
-  REPOSITORY_NAME: stuttgart-things
-  MODULE: github.com/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}
-  CONTAINER_RUNTIME_CMD: sudo nerdctl
-  CONTROLLER_GEN_CMD: "./bin/controller-gen"
-  KUSTOMIZE_CMD: kustomize
 
 tasks:
 
