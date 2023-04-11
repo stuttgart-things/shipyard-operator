@@ -98,5 +98,12 @@ spec:
           requests:
             cpu: 10m
             memory: 64Mi
+        volumeMounts:
+          - name: terraform-templates
+            mountPath: /terraform/
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
+      volumes:
+      - name: terraform-templates
+        configMap:
+          name: terraform-templates
