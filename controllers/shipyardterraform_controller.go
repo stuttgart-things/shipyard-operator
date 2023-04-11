@@ -97,7 +97,7 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	renderedModuleCall, _ := sthingsBase.RenderTemplateInline(string(moduleCallTemplate), "missingkey=zero", "{{", "}}", moduleParameter)
 	fmt.Println(string(renderedModuleCall))
 
-	log.Info("⚡️ Creating working dir and project files ⚡️", workingDir)
+	log.Info("⚡️ Creating working dir and project files ⚡️")
 	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
 	sthingsBase.StoreVariableInFile(workingDir+req.Name+".tf", string(renderedModuleCall))
 	sthingsBase.StoreVariableInFile(workingDir+req.Name+"/terraform.tfvars", strings.Join(variables, "\n"))
