@@ -20,6 +20,7 @@ vars:
   CONTROLLER_GEN_CMD: "./bin/controller-gen"
   KUSTOMIZE_CMD: kustomize
 
+
 tasks:
   install-kustomize:
     desc: Download + install-kustomize
@@ -83,5 +84,10 @@ tasks:
       - '{{ .KUSTOMIZE_CMD }} build config/default > /tmp/{{ .PROJECT_NAME }}-deployment.yaml'
       - kubectl get nodes
       - sleep 5
+      - envsubst < config/addons/secret.yaml | kubectl apply -f -
       - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-deployment.yaml
       - kubectl apply -f ./config/samples/shipyard_v1beta1_shipyardterraform.yaml
+    env:
+      VAULT_TOKEN: ${VAULT_TOKEN}
+      VAULT_NAMESPACE: ${VAULT_NAMESPACE}
+      VAULT_ADDR: ${VAULT_ADDR}
