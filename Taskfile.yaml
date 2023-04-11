@@ -14,19 +14,16 @@ vars:
     sh: old_tag=$(git describe --tags --abbrev=0 | cut -d "." -f3); new_tag=$((old_tag+1)); echo $new_tag
 
 tasks:
-
   lint:
     desc: Lint code
     cmds:
       - cmd: golangci-lint run
         ignore_error: true
-
   test:
     desc: Test code
     cmds:
       - go mod tidy
       - go test -v
-
   crds:
     desc: Generate crds
     deps: [lint, test]
