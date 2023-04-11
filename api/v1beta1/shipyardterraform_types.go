@@ -34,7 +34,7 @@ type ShipyardTerraformSpec struct {
 	Template         string   `json:"template"`
 	Variables        []string `json:"variables"`
 	// Secrets          []string `json:"secrets"`
-	// Backend          []string `json:"backend,omitempty"`
+	Backend []string `json:"backend"`
 }
 
 // ShipyardTerraformStatus defines the observed state of ShipyardTerraform

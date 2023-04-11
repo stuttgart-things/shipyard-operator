@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-exec/tfexec"
 	sthingsBase "github.com/stuttgart-things/sthingsBase"
 	"k8s.io/apimachinery/pkg/api/errors"
 
@@ -75,8 +76,11 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	var tfVersion string = terraformCR.Spec.TerraformVersion
 	var template string = terraformCR.Spec.Template
 	var module []string = terraformCR.Spec.Module
+	var backend []string = terraformCR.Spec.Backend
 	var variables []string = terraformCR.Spec.Variables
 	var workingDir = "/tmp/tf/" + req.Name + "/"
+	var tfInitOptions []tfexec.InitOption
+	var tf = InitalizeTerraform(workingDir, tfVersion)
 
 	// GET MODULE PARAMETER
 	moduleParameter := make(map[string]interface{})
@@ -102,6 +106,20 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	sthingsBase.StoreVariableInFile(workingDir+req.Name+".tf", string(renderedModuleCall))
 	sthingsBase.StoreVariableInFile(workingDir+"terraform.tfvars", strings.Join(variables, "\n"))
 
+	// TERRAFORM INIT
+	log.Info("⚡️ Initalize terraform ⚡️")
+
+	for _, backendParameter := range backend {
+		tfInitOptions = append(tfInitOptions, tfexec.BackendConfig(strings.TrimSpace(backendParameter)))
+	}
+
+	err = tf.Init(context.Background(), tfInitOptions...)
+	if err != nil {
+		fmt.Println("error running Init: %s", err)
+	}
+
+	log.Info("⚡️ Initalizing terraform done ⚡️")
+
 	return ctrl.Result{}, nil
 }
 
@@ -110,4 +128,25 @@ func (r *ShipyardTerraformReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&shipyardv1beta1.ShipyardTerraform{}).
 		Complete(r)
+}
+
+func InitalizeTerraform(terraformDir, terraformVersion string) (tf *tfexec.Terraform) {
+
+	installer := &releases.ExactVersion{
+		Product: product.Terraform,
+		Version: version.Must(version.NewVersion(terraformVersion)),
+	}
+
+	execPath, err := installer.Install(context.Background())
+	if err != nil {
+		fmt.Println("Error installing Terraform: %s", err)
+	}
+
+	tf, err = tfexec.NewTerraform(terraformDir, execPath)
+	if err != nil {
+		fmt.Println("Error running Terraform: %s", err)
+	}
+
+	return
+
 }
