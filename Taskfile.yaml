@@ -1,0 +1,19 @@
+---
+version: "3"
+vars:
+  PROJECT_NAME:
+    sh: pwd | grep -o "[^/]*$"
+  CONTROLLER_GEN: "./bin/controller-gen"
+
+tasks:
+
+  lint:
+    desc: Lint code
+    cmds:
+      - cmd: golangci-lint run
+        ignore_error: true
+
+  crds:
+    desc: Generate crds
+    cmds:
+      - '{{ .CONTROLLER_GEN }} rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases'
