@@ -3,7 +3,6 @@ version: "3"
 vars:
   PROJECT_NAME:
     sh: pwd | grep -o "[^/]*$"
-  CONTROLLER_GEN: "./bin/controller-gen"
   MAJOR:
     sh: git describe --tags --abbrev=0 | cut -d "." -f1
   MINOR:
@@ -11,15 +10,22 @@ vars:
   PATCH:
     sh: git describe --tags --abbrev=0 | cut -d "." -f3
   VERSION:
-    sh: old_tag=$(git describe --tags --abbrev=0 | cut -d "." -f3); new_tag=$((old_tag+1)); echo $new_tag
+    sh: git describe --tags --abbrev=0
   DATE:
     sh: date +"%y.%m%d.%H%M"
   REGISTRY: eu.gcr.io
   REPOSITORY_NAME: stuttgart-things
   MODULE: github.com/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}
-
+  CONTAINER_RUNTIME_CMD: sudo nerdctl
+  CONTROLLER_GEN_CMD: "./bin/controller-gen"
+  KUSTOMIZE_CMD: kustomize
 
 tasks:
+  install-kustomize:
+    desc: Download + install-kustomize
+    cmds:
+      - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | sudo bash
+
   lint:
     desc: Lint code
     cmds:
@@ -34,7 +40,16 @@ tasks:
     desc: Generate crds
     deps: [lint, test]
     cmds:
-      - '{{ .CONTROLLER_GEN }} rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases'
+      - '{{ .CONTROLLER_GEN_CMD }} rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases'
+
+  deploy-crds:
+    desc: Generate and deploy crds
+    deps: [crds]
+    cmds:
+      - '{{ .KUSTOMIZE_CMD }} build config/crd > /tmp/{{ .PROJECT_NAME }}-crds.yaml'
+      - kubectl get nodes
+      - sleep 5
+      - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-crds.yaml
 
   tag:
     desc: commit, push & tag the module
@@ -57,5 +72,5 @@ tasks:
     desc: Build image
     deps: [crds]
     cmds:
-      - nerdctl build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .CI_PROJECT_NAME }}:{{ .DATE }}.
-      - nerdctl push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .CI_PROJECT_NAME }}:{{ .DATE }}
+      - "{{ .CONTAINER_RUNTIME_CMD }} build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }} ."
+      - "{{ .CONTAINER_RUNTIME_CMD }} push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }}"
