@@ -10,3 +10,4 @@ metadata:
   name: shipyardterraform-sample
 spec:
   terraform-version: 1.4.4
+  template: vsphere-vm

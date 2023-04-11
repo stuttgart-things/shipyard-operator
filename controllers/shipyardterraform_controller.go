@@ -59,6 +59,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	log.Info("Request: ", "req", req)
 
 	terraformCR := &shipyardv1beta1.ShipyardTerraform{}
+	var tfVersion string = terraformCR.Spec.TerraformVersion
+	var template string = terraformCR.Spec.TerraformVersion
 
 	err := r.Get(ctx, req.NamespacedName, terraformCR)
 
@@ -71,6 +73,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	fmt.Println("CR-NAME", req.Name)
+	fmt.Println("TEMPLATE", template)
+	fmt.Println("TF-VERSION", tfVersion)
 
 	b := sthingsBase.ReadFileToVariable("terraform/vsphere-vm")
 	fmt.Println(string(b))

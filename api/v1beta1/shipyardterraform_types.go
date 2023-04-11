@@ -30,6 +30,8 @@ type ShipyardTerraformSpec struct {
 
 	// +kubebuilder:default:="1.4.4"
 	TerraformVersion string `json:"terraform-version,omitempty"`
+
+	Template string `json:"template"`
 }
 
 // ShipyardTerraformStatus defines the observed state of ShipyardTerraform
