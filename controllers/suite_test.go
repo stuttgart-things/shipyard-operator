@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	shipyardv1beta1 "github/shipyard-operator/api/v1beta1"
+	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 

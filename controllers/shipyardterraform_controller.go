@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	shipyardv1beta1 "github/shipyard-operator/api/v1beta1"
+	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 )
 
 // ShipyardTerraformReconciler reconciles a ShipyardTerraform object
