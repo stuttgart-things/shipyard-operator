@@ -60,7 +60,7 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	terraformCR := &shipyardv1beta1.ShipyardTerraform{}
 	var tfVersion string = terraformCR.Spec.TerraformVersion
-	var template string = terraformCR.Spec.TerraformVersion
+	var template string = terraformCR.Spec.Template
 
 	err := r.Get(ctx, req.NamespacedName, terraformCR)
 
