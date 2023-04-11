@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	sthingsBase "github.com/stuttgart-things/sthingsBase"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -72,12 +73,24 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	var tfVersion string = terraformCR.Spec.TerraformVersion
 	var template string = terraformCR.Spec.Template
+	var module []string = terraformCR.Spec.Module
+
+	// GET MODULE PARAMETER
+	moduleParameter := make(map[string]interface{})
+
+	for _, s := range module {
+
+		keyValue := strings.Split(s, "=")
+
+		moduleParameter[keyValue[0]] = keyValue[1]
+	}
 
 	fmt.Println("CR-NAME", req.Name)
 	fmt.Println("TEMPLATE", template)
 	fmt.Println("TF-VERSION", tfVersion)
+	fmt.Println("MODULE", moduleParameter)
 
-	b := sthingsBase.ReadFileToVariable("terraform/vsphere-vm")
+	b := sthingsBase.ReadFileToVariable("terraform/" + template)
 	fmt.Println(string(b))
 
 	return ctrl.Result{}, nil

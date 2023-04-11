@@ -35,12 +35,17 @@ spec:
           spec:
             description: ShipyardTerraformSpec defines the desired state of ShipyardTerraform
             properties:
+              module:
+                items:
+                  type: string
+                type: array
               template:
                 type: string
               terraform-version:
                 default: 1.4.4
                 type: string
             required:
+            - module
             - template
             type: object
           status:
