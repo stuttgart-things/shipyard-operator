@@ -11,3 +11,14 @@ metadata:
 spec:
   terraform-version: 1.4.4
   template: vsphere-vm
+  module:
+    - moduleName=shipyard-operator3
+    - backendKey=shipyard-operator3.tfstate
+    - moduleSourceUrl=https://github.com/stuttgart-things/vsphere-vm.git
+    - backendEndpoint=https://artifacts.tiab.labda.sva.de
+    - backendRegion=main
+    - backendBucket=vsphere-vm
+    - tfProviderName=vsphere
+    - tfProviderSource=hashicorp/vsphere
+    - tfProviderVersion=2.3.1
+    - tfVersion=1.4.4
