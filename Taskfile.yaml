@@ -14,9 +14,10 @@ vars:
     sh: old_tag=$(git describe --tags --abbrev=0 | cut -d "." -f3); new_tag=$((old_tag+1)); echo $new_tag
   DATE:
     sh: date +"%y.%m%d.%H%M"
-  MODULE: github.com/stuttgart-things/yacht-application-server
   REGISTRY: eu.gcr.io
   REPOSITORY_NAME: stuttgart-things
+  MODULE: github.com/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}
+
 
 tasks:
   lint:
@@ -56,5 +57,5 @@ tasks:
     desc: Build image
     deps: [crds]
     cmds:
-      - sudo nerdctl build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .CI_PROJECT_NAME }}:{{ .DATE }}.
-      - sudo nerdctl push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .CI_PROJECT_NAME }}:{{ .DATE }}
+      - nerdctl build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .CI_PROJECT_NAME }}:{{ .DATE }}.
+      - nerdctl push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .CI_PROJECT_NAME }}:{{ .DATE }}
