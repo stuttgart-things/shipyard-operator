@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	sthingsBase "github.com/stuttgart-things/sthingsBase"
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -70,6 +71,9 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	fmt.Println("CR-NAME", req.Name)
+
+	b := sthingsBase.ReadFileToVariable("terraform/vsphere-vm")
+	fmt.Println(string(b))
 
 	return ctrl.Result{}, nil
 }
