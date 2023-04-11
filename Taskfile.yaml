@@ -86,7 +86,7 @@ tasks:
       - kubectl get nodes
       - sleep 5
       - envsubst < config/addons/secret.yaml | kubectl apply -f -
-      - kubectl apply -f /config/addons/template.yaml
+      - kubectl apply -f config/addons/template.yaml
       - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-deployment.yaml
       - kubectl apply -f ./config/samples/shipyard_v1beta1_shipyardterraform.yaml
     env:
