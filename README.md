@@ -1,44 +1,62 @@
 # shipyard-operator
 // TODO(user): Add simple overview of use/purpose
 
-## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
-
 ## Getting Started
 You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
 **Note:** Your controller will automatically use the current context in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
 ### Running on the cluster
-1. Install Instances of Custom Resources:
 
-```sh
-kubectl apply -f config/samples/
-```
 
-2. Build and push your image to the location specified by `IMG`:
-
-```sh
-make docker-build docker-push IMG=<some-registry>/shipyard-operator:tag
-```
-
-3. Deploy the controller to the cluster with the image specified by `IMG`:
-
-```sh
-make deploy IMG=<some-registry>/shipyard-operator:tag
-```
-
-### Uninstall CRDs
-To delete the CRDs from the cluster:
-
-```sh
-make uninstall
-```
 
 ### Undeploy controller
-UnDeploy the controller from the cluster:
+UnDeploy the controller from the cluster.
 
-```sh
-make undeploy
+### Create ShipyardTerraform CR
+
+```
+apiVersion: shipyard.sthings.tiab.ssc.sva.de/v1beta1
+kind: ShipyardTerraform
+metadata:
+  name: shipyardterraform-sample
+  labels:
+    app.kubernetes.io/name: shipyardterraform
+    app.kubernetes.io/part-of: shipyard-operator
+    app.kubernetes.io/created-by: shipyard-operator
+spec:
+  variables:
+    - vsphere_vm_name="shipyard-operator5"
+    - vm_count=1
+    - vm_num_cpus=6
+    - vm_memory=8192
+    - vsphere_vm_template="/LabUL/host/Cluster01/10.31.101.40/ubuntu22"
+    - vsphere_vm_folder_path="phermann/rancher-things"
+    - vsphere_network="/LabUL/host/Cluster01/10.31.101.41/MGMT-10.31.101"
+    - vsphere_datastore="/LabUL/host/Cluster01/10.31.101.41/UL-ESX-SAS-01"
+    - vsphere_resource_pool="/LabUL/host/Cluster01/Resources"
+    - vsphere_datacenter="LabUL"
+  module:
+    - moduleName=shipyard-operator5
+    - backendKey=shipyard-operator5.tfstate
+    - moduleSourceUrl=https://artifacts.tiab.labda.sva.de/modules/vsphere-vm.zip
+    - backendEndpoint=https://artifacts.tiab.labda.sva.de
+    - backendRegion=main
+    - backendBucket=vsphere-vm
+    - tfProviderName=vsphere
+    - tfProviderSource=hashicorp/vsphere
+    - tfProviderVersion=2.3.1
+    - tfVersion=1.4.4
+  backend:
+    - access_key=apps/data/artifacts:rootUser
+    - secret_key=apps/data/artifacts:rootPassword
+  secrets:
+    - vsphere_user=cloud/data/vsphere:username
+    - vsphere_password=cloud/data/vsphere:password
+    - vsphere_server=cloud/data/vsphere:ip
+    - vm_ssh_user=cloud/data/vsphere:vm_ssh_user
+    - vm_ssh_password=cloud/data/vsphere:vm_ssh_password
+  terraform-version: 1.4.4
+  template: vsphere-vm
 ```
 
 ## Contributing
@@ -50,31 +68,6 @@ This project aims to follow the Kubernetes [Operator pattern](https://kubernetes
 It uses [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/),
 which provide a reconcile function responsible for synchronizing resources until the desired state is reached on the cluster.
 
-### Test It Out
-1. Install the CRDs into the cluster:
-
-```sh
-make install
-```
-
-2. Run your controller (this will run in the foreground, so switch to a new terminal if you want to leave it running):
-
-```sh
-make run
-```
-
-**NOTE:** You can also run this in one step by running: `make install run`
-
-### Modifying the API definitions
-If you are editing the API definitions, generate the manifests such as CRs or CRDs using:
-
-```sh
-make manifests
-```
-
-**NOTE:** Run `make --help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
 
 ## License
 
@@ -91,4 +84,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
