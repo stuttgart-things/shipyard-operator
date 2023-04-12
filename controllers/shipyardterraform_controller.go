@@ -89,6 +89,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	var secrets []string = terraformCR.Spec.Secrets
 	var variables []string = terraformCR.Spec.Variables
 	var workingDir = "/tmp/tf/" + req.Name + "/"
+	var tfInitOptions []tfexec.InitOption
+	var applyOptions []tfexec.ApplyOption
 
 	// GET MODULE PARAMETER
 	moduleParameter := make(map[string]interface{})
@@ -130,7 +132,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	tf := InitalizeTerraform(workingDir, tfVersion)
 
 	log.Info("⚡️ Initalize terraform ⚡️")
-	var tfInitOptions []tfexec.InitOption
 	tfInitOptions = append(tfInitOptions, tfexec.Upgrade(true))
 
 	for _, backendParameter := range backend {
@@ -144,6 +145,22 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	log.Info("⚡️ Initalizing terraform done ⚡️")
+
+	// TERRAFORM APPLY
+	for _, secret := range secrets {
+		applyOptions = append(applyOptions, tfexec.Var(strings.TrimSpace(secret)))
+	}
+
+	err = tf.Apply(context.Background(), applyOptions...)
+
+	if err != nil {
+		fmt.Println("error running Apply: %s", err)
+	}
+
+	tf.SetStdout(os.Stdout)
+	tf.SetStderr(os.Stderr)
+
+	log.Info("TF APPLY DONE!")
 
 	return ctrl.Result{}, nil
 }

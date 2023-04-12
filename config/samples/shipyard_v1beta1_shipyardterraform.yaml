@@ -4,8 +4,6 @@ metadata:
   name: shipyardterraform-sample
   labels:
     app.kubernetes.io/name: shipyardterraform
-    # app.kubernetes.io/managed-by: kustomize
-    # app.kubernetes.io/instance: shipyardterraform-sample
     app.kubernetes.io/part-of: shipyard-operator
     app.kubernetes.io/created-by: shipyard-operator
 spec:
@@ -20,8 +18,6 @@ spec:
     - vsphere_datastore="/LabUL/host/Cluster01/10.31.101.41/UL-ESX-SAS-01"
     - vsphere_resource_pool="/LabUL/host/Cluster01/Resources"
     - vsphere_datacenter="LabUL"
-  terraform-version: 1.4.4
-  template: vsphere-vm
   module:
     - moduleName=shipyard-operator3
     - backendKey=shipyard-operator3.tfstate
@@ -42,3 +38,5 @@ spec:
     - vsphere_server=cloud/data/vsphere:ip
     - vm_ssh_user=cloud/data/vsphere:vm_ssh_user
     - vm_ssh_password=cloud/data/vsphere:vm_ssh_password
+  terraform-version: 1.4.4
+  template: vsphere-vm
