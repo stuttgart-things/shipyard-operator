@@ -32,12 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/hashicorp/go-version"
-	"github.com/hashicorp/hc-install/product"
-	"github.com/hashicorp/hc-install/releases"
-
-	sthingsCli "github.com/stuttgart-things/sthingsCli"
-
 	// "github.com/hashicorp/terraform-exec/tfexec"
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 )
@@ -106,11 +100,9 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// CONVERT ALL EXISTING SECRETS IN MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
-	fmt.Println(backend)
 
 	// CONVERT ALL EXISTING SECRETS IN MODULE PARAMETERS
 	secrets = ConvertVaultSecretsInParameters(secrets)
-	fmt.Println(secrets)
 
 	fmt.Println("CR-NAME", req.Name)
 	fmt.Println("TEMPLATE", template)
@@ -121,7 +113,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	log.Info("⚡️ Rendering tf config ⚡️")
 	renderedModuleCall, _ := sthingsBase.RenderTemplateInline(string(moduleCallTemplate), "missingkey=zero", "{{", "}}", moduleParameter)
-	fmt.Println(string(renderedModuleCall))
 
 	log.Info("⚡️ Creating working dir and project files ⚡️")
 	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
@@ -170,58 +161,4 @@ func (r *ShipyardTerraformReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&shipyardv1beta1.ShipyardTerraform{}).
 		Complete(r)
-}
-
-func InitalizeTerraform(terraformDir, terraformVersion string) (tf *tfexec.Terraform) {
-
-	installer := &releases.ExactVersion{
-		Product: product.Terraform,
-		Version: version.Must(version.NewVersion(terraformVersion)),
-	}
-
-	execPath, err := installer.Install(context.Background())
-	if err != nil {
-		fmt.Println("Error installing Terraform: %s", err)
-	}
-
-	tf, err = tfexec.NewTerraform(terraformDir, execPath)
-	if err != nil {
-		fmt.Println("Error running Terraform: %s", err)
-	}
-
-	return
-
-}
-
-func ConvertVaultSecretsInParameters(parameters []string) (updatedParameters []string) {
-
-	for _, parameter := range parameters {
-
-		kvParameter := strings.Split(parameter, "=")
-		updatedParameter := parameter
-
-		if len(sthingsBase.GetAllRegexMatches(kvParameter[1], regexPatternVaultSecretPath)) > 0 {
-			secretValue := sthingsCli.GetVaultSecretValue(kvParameter[1], os.Getenv("VAULT_TOKEN"))
-
-			fmt.Println("VAULT PATH FOUND!")
-			fmt.Println(secretValue)
-			updatedParameter = kvParameter[0] + "=" + secretValue
-		}
-
-		updatedParameters = append(updatedParameters, updatedParameter)
-
-	}
-
-	return
-}
-
-func VerifyVaultEnvVars() bool {
-
-	if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_TOKEN", "VAULT_NAMESPACE"}) {
-		fmt.Println("VAULT SET!")
-	} else {
-		fmt.Println("UNSET!")
-	}
-
-	return true
 }
