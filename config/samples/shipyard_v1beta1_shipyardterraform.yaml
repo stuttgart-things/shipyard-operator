@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/created-by: shipyard-operator
 spec:
   variables:
-    - vsphere_vm_name="shipyard-operator3"
+    - vsphere_vm_name="shipyard-operator-4"
     - vm_count=1
     - vm_num_cpus=6
     - vm_memory=8192
@@ -23,8 +23,8 @@ spec:
   terraform-version: 1.4.4
   template: vsphere-vm
   module:
-    - moduleName=shipyard-operator3
-    - backendKey=shipyard-operator3.tfstate
+    - moduleName=shipyard-operator-4
+    - backendKey=shipyard-operator-4.tfstate
     - moduleSourceUrl=https://github.com/stuttgart-things/vsphere-vm.git
     - backendEndpoint=https://artifacts.tiab.labda.sva.de
     - backendRegion=main
