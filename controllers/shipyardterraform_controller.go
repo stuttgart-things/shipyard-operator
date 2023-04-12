@@ -37,7 +37,7 @@ import (
 	"github.com/hashicorp/hc-install/releases"
 	sthingsCli "github.com/stuttgart-things/sthingsCli"
 
-	//"github.com/hashicorp/terraform-exec/tfexec"
+	// "github.com/hashicorp/terraform-exec/tfexec"
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 )
 
@@ -147,6 +147,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	log.Info("⚡️ Initalizing terraform done ⚡️")
 
 	// TERRAFORM APPLY
+	log.Info("⚡️ Applying.. ⚡️")
+
 	for _, secret := range secrets {
 		applyOptions = append(applyOptions, tfexec.Var(strings.TrimSpace(secret)))
 	}
