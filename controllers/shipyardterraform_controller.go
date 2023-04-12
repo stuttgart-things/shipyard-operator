@@ -34,6 +34,7 @@ import (
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/hc-install/product"
 	"github.com/hashicorp/hc-install/releases"
+	sthingsCli "github.com/stuttgart-things/sthingsCli"
 
 	//"github.com/hashicorp/terraform-exec/tfexec"
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
@@ -94,6 +95,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		keyValue := strings.Split(s, "=")
 		moduleParameter[keyValue[0]] = keyValue[1]
 	}
+
+	VerifyVaultEnvVars()
 
 	// CONVERT MAY EXISTING SECRETS IN MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
@@ -182,6 +185,17 @@ func ConvertVaultSecretsInParameters(parameters []string) (updatedParameters []s
 	}
 
 	return
+}
+
+func VerifyVaultEnvVars() bool {
+
+	if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_TOKEN", "VAULT_NAMESPACE"}) {
+		fmt.Println("VAULT SET!")
+	} else {
+		fmt.Println("UNSET!")
+	}
+
+	return true
 }
 
 // func GetVaultSecrets(parameters []string) []string {
