@@ -102,8 +102,7 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	// CHECK FOR VAULT ENV VARS
-	vaultParameterAvailable := VerifyVaultEnvVars()
-	fmt.Println(vaultParameterAvailable)
+	VerifyVaultEnvVars()
 
 	// CONVERT ALL EXISTING SECRETS IN MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
@@ -131,7 +130,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// TERRAFORM INIT
 	tf := InitalizeTerraform(workingDir, tfVersion)
-
 	log.Info("⚡️ Initalize terraform ⚡️")
 	tfInitOptions = append(tfInitOptions, tfexec.Upgrade(true))
 
@@ -149,7 +147,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// TERRAFORM APPLY
 	log.Info("⚡️ Applying.. ⚡️")
-
 	for _, secret := range secrets {
 		applyOptions = append(applyOptions, tfexec.Var(strings.TrimSpace(secret)))
 	}
