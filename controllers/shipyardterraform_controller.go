@@ -96,7 +96,9 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		moduleParameter[keyValue[0]] = keyValue[1]
 	}
 
-	VerifyVaultEnvVars()
+	// CHECK FOR VAULT ENV VARS
+	vaultParameterAvailable := VerifyVaultEnvVars()
+	fmt.Println(vaultParameterAvailable)
 
 	// CONVERT MAY EXISTING SECRETS IN MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
