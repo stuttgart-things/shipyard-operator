@@ -84,8 +84,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	var backend []string = terraformCR.Spec.Backend
 	var variables []string = terraformCR.Spec.Variables
 	var workingDir = "/tmp/tf/" + req.Name + "/"
-	var tfInitOptions []tfexec.InitOption
-	var tf = InitalizeTerraform(workingDir, tfVersion)
 
 	// GET MODULE PARAMETER
 	moduleParameter := make(map[string]interface{})
@@ -112,7 +110,10 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	sthingsBase.StoreVariableInFile(workingDir+"terraform.tfvars", strings.Join(variables, "\n"))
 
 	// TERRAFORM INIT
+	tf := InitalizeTerraform(workingDir, tfVersion)
+
 	log.Info("⚡️ Initalize terraform ⚡️")
+	var tfInitOptions []tfexec.InitOption
 	tfInitOptions = append(tfInitOptions, tfexec.Upgrade(true))
 
 	for _, backendParameter := range backend {
@@ -120,6 +121,7 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	err = tf.Init(context.Background(), tfInitOptions...)
+
 	if err != nil {
 		fmt.Println("error running Init: %s", err)
 	}
