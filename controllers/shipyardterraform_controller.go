@@ -113,7 +113,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// TERRAFORM INIT
 	log.Info("⚡️ Initalize terraform ⚡️")
-
 	tfInitOptions = append(tfInitOptions, tfexec.Upgrade(true))
 
 	for _, backendParameter := range backend {
