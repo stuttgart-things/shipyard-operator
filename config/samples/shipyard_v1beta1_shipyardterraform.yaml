@@ -36,3 +36,9 @@ spec:
   backend:
     - access_key=apps/data/artifacts:rootUser
     - secret_key=apps/data/artifacts:rootPassword
+  secrets:
+    - vsphere_user=cloud/data/vsphere:username
+    - vsphere_password=cloud/data/vsphere:password
+    - vsphere_server=cloud/data/vsphere:ip
+    - vm_ssh_user=cloud/data/vsphere:vm_ssh_user
+    - vm_ssh_password=cloud/data/vsphere:vm_ssh_password

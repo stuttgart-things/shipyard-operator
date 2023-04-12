@@ -36,11 +36,14 @@ spec:
             description: ShipyardTerraformSpec defines the desired state of ShipyardTerraform
             properties:
               backend:
-                description: Secrets          []string `json:"secrets"`
                 items:
                   type: string
                 type: array
               module:
+                items:
+                  type: string
+                type: array
+              secrets:
                 items:
                   type: string
                 type: array
@@ -56,6 +59,7 @@ spec:
             required:
             - backend
             - module
+            - secrets
             - template
             - variables
             type: object
