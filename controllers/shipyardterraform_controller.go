@@ -96,8 +96,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	// CONVERT MAY EXISTING SECRETS IN MODULE PARAMETERS
-	module = ConvertVaultSecretsInParameters(module)
-	fmt.Println(module)
+	backend = ConvertVaultSecretsInParameters(backend)
+	fmt.Println(backend)
 
 	fmt.Println("CR-NAME", req.Name)
 	fmt.Println("TEMPLATE", template)

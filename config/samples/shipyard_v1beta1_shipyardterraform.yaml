@@ -25,7 +25,7 @@ spec:
   module:
     - moduleName=shipyard-operator-4
     - backendKey=shipyard-operator-4.tfstate
-    - moduleSourceUrl=git::https://github.com/stuttgart-things/vsphere-vm.git
+    - moduleSourceUrl=https://github.com/stuttgart-things/vsphere-vm.git
     - backendEndpoint=https://artifacts.tiab.labda.sva.de
     - backendRegion=main
     - backendBucket=vsphere-vm
