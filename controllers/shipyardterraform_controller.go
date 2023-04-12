@@ -86,6 +86,7 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	var template string = terraformCR.Spec.Template
 	var module []string = terraformCR.Spec.Module
 	var backend []string = terraformCR.Spec.Backend
+	var secrets []string = terraformCR.Spec.Secrets
 	var variables []string = terraformCR.Spec.Variables
 	var workingDir = "/tmp/tf/" + req.Name + "/"
 
@@ -101,9 +102,13 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	vaultParameterAvailable := VerifyVaultEnvVars()
 	fmt.Println(vaultParameterAvailable)
 
-	// CONVERT MAY EXISTING SECRETS IN MODULE PARAMETERS
+	// CONVERT ALL EXISTING SECRETS IN MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
 	fmt.Println(backend)
+
+	// CONVERT ALL EXISTING SECRETS IN MODULE PARAMETERS
+	secrets = ConvertVaultSecretsInParameters(secrets)
+	fmt.Println(secrets)
 
 	fmt.Println("CR-NAME", req.Name)
 	fmt.Println("TEMPLATE", template)

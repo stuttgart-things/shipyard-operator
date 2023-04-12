@@ -33,8 +33,8 @@ type ShipyardTerraformSpec struct {
 	Module           []string `json:"module"`
 	Template         string   `json:"template"`
 	Variables        []string `json:"variables"`
-	// Secrets          []string `json:"secrets"`
-	Backend []string `json:"backend"`
+	Backend          []string `json:"backend"`
+	Secrets          []string `json:"secrets"`
 }
 
 // ShipyardTerraformStatus defines the observed state of ShipyardTerraform

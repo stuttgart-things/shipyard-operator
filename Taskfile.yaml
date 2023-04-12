@@ -88,6 +88,7 @@ tasks:
       - kubectl apply -f config/addons/template.yaml
       - kubectl apply -f /tmp/{{ .PROJECT_NAME }}-deployment.yaml
       - kubectl apply -f ./config/samples/shipyard_v1beta1_shipyardterraform.yaml
+      - sleep 5
       - kubectl -n shipyard-operator-system logs -f $(kubectl get pods -o name -n shipyard-operator-system)
     env:
       VAULT_TOKEN: ${VAULT_TOKEN}
