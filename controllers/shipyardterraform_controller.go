@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/terraform-exec/tfexec"
@@ -178,8 +179,11 @@ func ConvertVaultSecretsInParameters(parameters []string) (updatedParameters []s
 		updatedParameter := parameter
 
 		if len(sthingsBase.GetAllRegexMatches(kvParameter[1], regexPatternVaultSecretPath)) > 0 {
+			secretValue := sthingsCli.GetVaultSecretValue(kvParameter[1], os.Getenv("VAULT_TOKEN"))
+
 			fmt.Println("VAULT PATH FOUND!")
-			updatedParameter = kvParameter[0] + "=" + "TRANSLATED"
+			fmt.Println(secretValue)
+			updatedParameter = kvParameter[0] + "=" + secretValue
 		}
 
 		updatedParameters = append(updatedParameters, updatedParameter)
@@ -199,32 +203,3 @@ func VerifyVaultEnvVars() bool {
 
 	return true
 }
-
-// func GetVaultSecrets(parameters []string) []string {
-
-// 	for i, parameter := range parameters {
-
-// 		kvApplyOption := strings.Split(parameter, "=")
-// 		applyOption := parameter
-
-// 		fmt.Println("VALUES", kvApplyOption[1])
-
-// 		// 	if len(sthingsBase.GetAllRegexMatches(kvApplyOption[1], regexPatternVaultSecretPath)) > 0 && enableVault {
-
-// 		// 		if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_TOKEN", "VAULT_NAMESPACE"}) {
-// 		// 			fmt.Println("VAULT SET!")
-// 		// 		} else {
-// 		// 			fmt.Println("UNSET!")
-// 		// 		}
-
-// 		// 		secretValue := sthingsCli.GetVaultSecretValue(kvApplyOption[1], os.Getenv("VAULT_TOKEN"))
-// 		// 		fmt.Println(secretValue)
-// 		// 		applyOption = kvApplyOption[0] + "=" + secretValue
-// 		// 	}
-
-// 		// 	applyOptions = append(applyOptions, tfexec.Var(strings.TrimSpace(applyOption)))
-// 		parameters[i] = applyOption
-// 	}
-
-// 	return parameters
-// }
