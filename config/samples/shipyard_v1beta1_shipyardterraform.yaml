@@ -34,5 +34,5 @@ spec:
     - tfProviderVersion=2.3.1
     - tfVersion=1.4.4
   backend:
-    - access_key=sthings
-    - secret_key=Atlan7is
+    - access_key=apps/data/artifacts:rootUser
+    - secret_key=apps/data/artifacts:rootPassword
