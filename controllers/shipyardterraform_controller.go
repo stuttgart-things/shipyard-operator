@@ -45,6 +45,8 @@ type ShipyardTerraformReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+const regexPatternVaultSecretPath = `.+/data/.+:.+`
+
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=shipyardterraforms,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=shipyardterraforms/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=shipyardterraforms/finalizers,verbs=update
@@ -92,6 +94,10 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		keyValue := strings.Split(s, "=")
 		moduleParameter[keyValue[0]] = keyValue[1]
 	}
+
+	// CONVERT MAY EXISTING SECRETS IN MODULE PARAMETERS
+	module = ConvertVaultSecretsInParameters(module)
+	fmt.Println(module)
 
 	fmt.Println("CR-NAME", req.Name)
 	fmt.Println("TEMPLATE", template)
@@ -158,3 +164,51 @@ func InitalizeTerraform(terraformDir, terraformVersion string) (tf *tfexec.Terra
 	return
 
 }
+
+func ConvertVaultSecretsInParameters(parameters []string) (updatedParameters []string) {
+
+	for _, parameter := range parameters {
+
+		kvParameter := strings.Split(parameter, "=")
+		updatedParameter := parameter
+
+		if len(sthingsBase.GetAllRegexMatches(kvParameter[1], regexPatternVaultSecretPath)) > 0 {
+			fmt.Println("VAULT PATH FOUND!")
+			updatedParameter = kvParameter[0] + "=" + "TRANSLATED"
+		}
+
+		updatedParameters = append(updatedParameters, updatedParameter)
+
+	}
+
+	return
+}
+
+// func GetVaultSecrets(parameters []string) []string {
+
+// 	for i, parameter := range parameters {
+
+// 		kvApplyOption := strings.Split(parameter, "=")
+// 		applyOption := parameter
+
+// 		fmt.Println("VALUES", kvApplyOption[1])
+
+// 		// 	if len(sthingsBase.GetAllRegexMatches(kvApplyOption[1], regexPatternVaultSecretPath)) > 0 && enableVault {
+
+// 		// 		if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_TOKEN", "VAULT_NAMESPACE"}) {
+// 		// 			fmt.Println("VAULT SET!")
+// 		// 		} else {
+// 		// 			fmt.Println("UNSET!")
+// 		// 		}
+
+// 		// 		secretValue := sthingsCli.GetVaultSecretValue(kvApplyOption[1], os.Getenv("VAULT_TOKEN"))
+// 		// 		fmt.Println(secretValue)
+// 		// 		applyOption = kvApplyOption[0] + "=" + secretValue
+// 		// 	}
+
+// 		// 	applyOptions = append(applyOptions, tfexec.Var(strings.TrimSpace(applyOption)))
+// 		parameters[i] = applyOption
+// 	}
+
+// 	return parameters
+// }
