@@ -19,6 +19,10 @@ vars:
     sh: git describe --tags --abbrev=0
   DATE:
     sh: date +"%y.%m%d.%H%M"
+  UPDATED_TAG:
+    sh: old_tag=$(git describe --tags --abbrev=0 | cut -d "." -f3); new_tag=$((old_tag+1)); echo $new_tag
+  UPDATED_TAG_VERSION:
+    sh: t1=$(git describe --tags --abbrev=0 | cut -f1 -d'.'); t2=$(git describe --tags --abbrev=0 | cut -f2 -d'.'); echo $t1.$t2.{{.UPDATED_TAG}}
 
 tasks:
 
@@ -54,11 +58,6 @@ tasks:
       - git push
       - git tag -a {{ .UPDATED_TAG_VERSION }} -m 'updated for stuttgart-things {{.DATE}} for tag version {{ .UPDATED_TAG_VERSION }}'
       - git push origin --tags
-    vars:
-      UPDATED_TAG:
-        sh: old_tag=$(git describe --tags --abbrev=0 | cut -d "." -f3); new_tag=$((old_tag+1)); echo $new_tag
-      UPDATED_TAG_VERSION:
-        sh: t1=$(git describe --tags --abbrev=0 | cut -f1 -d'.'); t2=$(git describe --tags --abbrev=0 | cut -f2 -d'.'); echo $t1.$t2.{{.UPDATED_TAG}}
 
   build-image:
     desc: Build image
@@ -94,3 +93,20 @@ tasks:
       VAULT_TOKEN: ${VAULT_TOKEN}
       VAULT_NAMESPACE: ${VAULT_NAMESPACE}
       VAULT_ADDR: ${VAULT_ADDR}
+
+  package:
+    desc: Update Chart.yaml and package archive
+    cmds:
+      - "sed -i 's/version: .*/version: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
+      - "sed -i 's/appVersion: .*/appVersion: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
+      - helm package ./helm/*/
+
+  push:
+    desc: Push to registry
+    deps: [package]
+    cmds:
+      - helm push {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}.tgz oci://{{ .REGISTRY }}/{{ .REPOSITORY_NAME }}
+      - rm -rf {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}.tgz
+    vars:
+      PACKAGE:
+        sh: "ls *stgz* -Art | tail -n 1"
