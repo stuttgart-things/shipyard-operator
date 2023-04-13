@@ -65,7 +65,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	log.Info("Request: ", "req", req)
 
 	terraformCR := &shipyardv1beta1.ShipyardTerraform{}
-
 	err := r.Get(ctx, req.NamespacedName, terraformCR)
 
 	if err != nil {
@@ -89,7 +88,6 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// GET MODULE PARAMETER
 	moduleParameter := make(map[string]interface{})
-
 	for _, s := range module {
 		keyValue := strings.Split(s, "=")
 		moduleParameter[keyValue[0]] = keyValue[1]
@@ -98,22 +96,19 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// CHECK FOR VAULT ENV VARS
 	VerifyVaultEnvVars()
 
-	// CONVERT ALL EXISTING SECRETS IN MODULE PARAMETERS
+	// CONVERT ALL EXISTING SECRETS IN BACKEND+MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
-
-	// CONVERT ALL EXISTING SECRETS IN MODULE PARAMETERS
 	secrets = ConvertVaultSecretsInParameters(secrets)
 
+	// PRINT OUT CR
 	fmt.Println("CR-NAME", req.Name)
-	fmt.Println("TEMPLATE", template)
-	fmt.Println("TF-VERSION", tfVersion)
-	fmt.Println("MODULE", moduleParameter)
 
+	// READ + RENDER TF MODULE TEMPLATE
 	moduleCallTemplate := sthingsBase.ReadFileToVariable("terraform/" + template)
-
 	log.Info("⚡️ Rendering tf config ⚡️")
 	renderedModuleCall, _ := sthingsBase.RenderTemplateInline(string(moduleCallTemplate), "missingkey=zero", "{{", "}}", moduleParameter)
 
+	// CREATE TF FILES
 	log.Info("⚡️ Creating working dir and project files ⚡️")
 	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
 	sthingsBase.StoreVariableInFile(workingDir+req.Name+".tf", string(renderedModuleCall))
