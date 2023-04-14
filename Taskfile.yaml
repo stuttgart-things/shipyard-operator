@@ -97,7 +97,7 @@ tasks:
   package:
     desc: Update Chart.yaml and package archive
     cmds:
-      - "sed -i 's/version: .*/version: {{ .UPDATED_TAG_VERSION }}-{{ .DATE }}/g' ./helm/*/Chart.yaml"
+      - "sed -i 's/version: .*/version: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
       - "sed -i 's/appVersion: .*/appVersion: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
       - yq e -i '.deployment.containers.manager.tag = "{{ .UPDATED_TAG_VERSION }}-{{ .DATE }}"' ./helm/*/values.yaml
       - helm package ./helm/*/
