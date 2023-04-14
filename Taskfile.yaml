@@ -63,9 +63,9 @@ tasks:
     desc: Build image
     deps: [tag, crds]
     cmds:
-      - "{{ .CONTAINER_RUNTIME_CMD }} build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }} ."
-      - "{{ .CONTAINER_RUNTIME_CMD }} push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }}"
-      - cd config/manager && {{ .KUSTOMIZE_CMD }} edit set image controller={{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .DATE }}-{{ .VERSION }}
+      - "{{ .CONTAINER_RUNTIME_CMD }} build -t {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .VERSION }} ."
+      - "{{ .CONTAINER_RUNTIME_CMD }} push {{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .VERSION }}"
+      - cd config/manager && {{ .KUSTOMIZE_CMD }} edit set image controller={{ .REGISTRY }}/{{ .REPOSITORY_NAME }}/{{ .PROJECT_NAME }}:{{ .VERSION }}
 
   deploy-crds:
     desc: Generate and deploy crds
