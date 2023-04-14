@@ -12,7 +12,30 @@
 helm upgrade --install shipyard-operator \
 oci://eu.gcr.io/stuttgart-things/shipyard-operator:v0.1.62 \
 -n shipyard-operator-system --create-namespace
-```   
+```
+
+#### DEPLOY W/ ARGOCD-VAULT-PLUGIN
+
+```
+cat <<EOF > shipyard-operator.yaml
+secrets:
+  vault:
+    name: vault-connection
+    labels:
+      app.kubernetes.io/component: manager
+      app.kubernetes.io/created-by: shipyard-operator
+      app.kubernetes.io/instance: controller-manager
+      app.kubernetes.io/part-of: shipyard-operator
+    secretKVs:
+      VAULT_TOKEN: <path:apps/data/vault#token>
+      VAULT_NAMESPACE: <path:apps/data/vault#namespace>
+      VAULT_ADDR: <path:apps/data/vault#url>
+EOF
+
+
+helm template --values <(cat shipyard-operator.yaml) . | argocd-vault generate -
+```
+
 
 ### Undeploy controller
 UnDeploy the controller from the cluster.
