@@ -2,19 +2,14 @@
 
 ## Getting Started
 
-### Deploy Latest Dev Artifact
-
-```
-helm pull oci://eu.gcr.io/stuttgart-things/shipyard-operator:v0.1.62
-helm upgrade --install shipyard-operator -n shipyard-operator-system
-```   
-
-
-
-
 ### Running on the cluster
 
+#### STABLE
 
+#### LATEST DEV RELEASE
+```
+helm upgrade --install shipyard-operator oci://eu.gcr.io/stuttgart-things/shipyard-operator:v0.1.62 -n shipyard-operator-system --create-namespace
+```   
 
 ### Undeploy controller
 UnDeploy the controller from the cluster.
