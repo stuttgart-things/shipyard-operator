@@ -20,7 +20,7 @@ deployment:
   containers:
     manager:
       image: eu.gcr.io/stuttgart-things/shipyard-operator
-      tag: 172.16.87.98
+      tag: v0.1.55
       imagePullPolicy: Always
       env:
         ANSIBLE_GATHERING:

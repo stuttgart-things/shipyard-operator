@@ -49,7 +49,7 @@ tasks:
 
   tag:
     desc: commit, push & tag the module
-    deps: [lint]
+    deps: [lint, push]
     cmds:
       - go mod tidy
       - git pull
