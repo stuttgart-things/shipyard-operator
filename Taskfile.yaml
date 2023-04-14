@@ -99,7 +99,7 @@ tasks:
     cmds:
       - "sed -i 's/version: .*/version: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
       - "sed -i 's/appVersion: .*/appVersion: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
-      - yq e -i '.deployment.containers.manager.tag = "{{ .UPDATED_TAG_VERSION }}-{{ .DATE }}"' ./helm/*/values.yaml
+      - yq e -i '.deployment.containers.manager.tag = "{{ .DATE }}-{{ .UPDATED_TAG_VERSION }}"' ./helm/*/values.yaml
       - helm package ./helm/*/
 
   push:
