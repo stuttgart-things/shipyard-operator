@@ -49,7 +49,7 @@ tasks:
 
   tag:
     desc: commit, push & tag the module
-    deps: [lint, push]
+    deps: [lint]
     cmds:
       - go mod tidy
       - git pull
@@ -97,14 +97,14 @@ tasks:
   package:
     desc: Update Chart.yaml and package archive
     cmds:
-      - "sed -i 's/version: .*/version: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
-      - "sed -i 's/appVersion: .*/appVersion: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
-      - yq e -i '.deployment.containers.manager.tag = "{{ .UPDATED_TAG_VERSION }}"' ./helm/*/values.yaml
+      - "sed -i 's/version: .*/version: {{ .VERSION }}/g' ./helm/*/Chart.yaml"
+      - "sed -i 's/appVersion: .*/appVersion: {{ .VERSION }}/g' ./helm/*/Chart.yaml"
+      - yq e -i '.deployment.containers.manager.tag = "{{ .VERSION }}"' ./helm/*/values.yaml
       - helm package ./helm/*/
 
   push:
     desc: Push to registry
-    deps: [package]
+    deps: [build-image, package]
     cmds:
       - helm push {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}.tgz oci://{{ .REGISTRY }}/{{ .REPOSITORY_NAME }}
       - rm -rf {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}.tgz
