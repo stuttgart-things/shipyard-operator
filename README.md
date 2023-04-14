@@ -7,8 +7,11 @@
 #### STABLE
 
 #### LATEST DEV RELEASE
+
 ```
-helm upgrade --install shipyard-operator oci://eu.gcr.io/stuttgart-things/shipyard-operator:v0.1.62 -n shipyard-operator-system --create-namespace
+helm upgrade --install shipyard-operator \
+oci://eu.gcr.io/stuttgart-things/shipyard-operator:v0.1.62 \
+-n shipyard-operator-system --create-namespace
 ```   
 
 ### Undeploy controller
