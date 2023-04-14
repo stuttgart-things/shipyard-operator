@@ -1,8 +1,15 @@
 # stuttgart-things/shipyard-operator
 
-// TODO(user): Add simple overview of use/purpose
-
 ## Getting Started
+
+### Deploy Latest Dev Artifact
+
+```
+helm pull oci://eu.gcr.io/stuttgart-things/shipyard-operator:v0.1.62
+helm upgrade --install shipyard-operator -n shipyard-operator-system
+```   
+
+
 
 
 ### Running on the cluster
