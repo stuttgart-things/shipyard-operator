@@ -2,7 +2,7 @@ namespace: shipyard-operator-system
 
 secrets:
   vault:
-    name: vault-connection
+    name: vault
     labels:
       app.kubernetes.io/component: manager
       app.kubernetes.io/created-by: shipyard-operator

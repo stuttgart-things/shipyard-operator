@@ -16,11 +16,13 @@ oci://eu.gcr.io/stuttgart-things/shipyard-operator:v0.1.62 \
 
 #### DEPLOY W/ ARGOCD-VAULT-PLUGIN
 
+[argocd-vault-plugin](https://argocd-vault-plugin.readthedocs.io/en/stable/)
+
 ```
 cat <<EOF > shipyard-operator.yaml
 secrets:
   vault:
-    name: vault-connection
+    name: vault
     labels:
       app.kubernetes.io/component: manager
       app.kubernetes.io/created-by: shipyard-operator
@@ -32,10 +34,15 @@ secrets:
       VAULT_ADDR: <path:apps/data/vault#url>
 EOF
 
+# Template/test
 
 helm template --values <(cat shipyard-operator.yaml) . | argocd-vault generate -
-```
 
+# Install/Upgrade
+
+helm template -n shipyard-operator-system \
+--values <(cat dev2.yaml) . | argocd-vault generate - | kubectl apply -f -
+```
 
 ### Undeploy controller
 UnDeploy the controller from the cluster.
@@ -46,14 +53,14 @@ UnDeploy the controller from the cluster.
 apiVersion: shipyard.sthings.tiab.ssc.sva.de/v1beta1
 kind: ShipyardTerraform
 metadata:
-  name: shipyardterraform-sample
+  name: yacht-vm1
   labels:
     app.kubernetes.io/name: shipyardterraform
     app.kubernetes.io/part-of: shipyard-operator
     app.kubernetes.io/created-by: shipyard-operator
 spec:
   variables:
-    - vsphere_vm_name="shipyard-operator5"
+    - vsphere_vm_name="yacht1"
     - vm_count=1
     - vm_num_cpus=6
     - vm_memory=8192
@@ -64,8 +71,8 @@ spec:
     - vsphere_resource_pool="/LabUL/host/Cluster01/Resources"
     - vsphere_datacenter="LabUL"
   module:
-    - moduleName=shipyard-operator5
-    - backendKey=shipyard-operator5.tfstate
+    - moduleName=yacht1
+    - backendKey=yacht1.tfstate
     - moduleSourceUrl=https://artifacts.tiab.labda.sva.de/modules/vsphere-vm.zip
     - backendEndpoint=https://artifacts.tiab.labda.sva.de
     - backendRegion=main
