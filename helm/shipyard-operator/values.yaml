@@ -1,5 +1,4 @@
 namespace: shipyard-operator-system
-
 secrets:
   vault:
     name: vault
@@ -12,7 +11,6 @@ secrets:
       VAULT_TOKEN: <path:apps/data/vault#token>
       VAULT_NAMESPACE: <path:apps/data/vault#namespace>
       VAULT_ADDR: <path:apps/data/vault#url>
-
 configmaps:
   terraform-templates:
     vsphere-vm: |
@@ -20,6 +18,7 @@ configmaps:
         vm_count = var.vm_count
         vsphere_vm_name = var.vsphere_vm_name
         vm_num_cpus = var.vm_num_cpus
+
         vm_memory = var.vm_memory
         vm_disk_size = var.vm_disk_size
         firmware = var.firmware
@@ -163,8 +162,130 @@ configmaps:
       output "{{`{{ .moduleName }}`}}_ip" {
         value = module.{{`{{ .moduleName }}`}}.ip
       }
+    pve-vm: |
+      module "{{`{{ .moduleName }}`}}" {
+        vm_count = var.vm_count
+        vm_name = var.vm_name
+        vm_num_cpus = var.vm_num_cpus
+        vm_memory = var.vm_memory
+        vm_disk_size = var.vm_disk_size
 
+        vm_template = "u22-rke2-upi"
+        source = "https://artifacts.labul.sva.de/modules/proxmox-vm.zip"
+        pve_cluster_node = var.pve_cluster_node
+        pve_datastore = var.pve_datastore
+        pve_folder_path = var.pve_folder_path
+        pve_network = var.pve_network
+        vm_ssh_user = var.vm_ssh_user
+        vm_ssh_password = var.vm_ssh_password
+        vm_notes = "PVE-VM BUILD w/ SHIPYARD FOR STUTTGART-THINGS"
+      }
 
+      terraform {
+        backend "s3" {
+          endpoint = "https://artifacts.labul.sva.de"
+          key = "vm-cillium-dev1.tfstate"
+          region = "main"
+          bucket = "pve-vm"
+          skip_credentials_validation = true
+          skip_metadata_api_check = true
+          skip_region_validation = true
+          force_path_style = true
+      }
+        required_providers {
+          proxmox = {
+            source  = "Telmate/proxmox"
+            version = "2.9.14"
+          }
+        }
+      }
+
+      provider "proxmox" {
+          pm_api_url      = var.pve_api_url
+          pm_user         = var.pve_api_user
+          pm_password     = var.pve_api_password
+          pm_tls_insecure = var.pve_api_tls_verify
+          pm_parallel     = 3
+      }
+
+      variable "vm_count" {
+        default     = 1
+        description = "count of to be build vms"
+      }
+
+      variable "vm_name" {
+        default = false
+        description = "name of to be created vm"
+      }
+
+      variable "vm_num_cpus" {
+        default     = 8
+        description = "count of cpu cores"
+      }
+
+      variable "vm_disk_size" {
+        default     = "128"
+        description = "disk size"
+      }
+
+      variable "vm_memory" {
+        default     = 8192
+        description = "count of ram in mb"
+      }
+
+      variable "pve_api_url" {
+        default     = false
+        description = "url of proxmox api"
+      }
+
+      variable "pve_api_user" {
+        default     = false
+        description = "username of proxmox api user"
+      }
+
+      variable "pve_api_password" {
+        default     = false
+        description = "password of proxmox api user"
+      }
+
+      variable "pve_api_tls_verify" {
+        default     = true
+        description = "proxmox API disable check if cert is valid"
+      }
+
+      variable "vm_ssh_user" {
+        default         = ""
+        description     = "Username of VM"
+      }
+
+      variable "vm_ssh_password" {
+        default         = ""
+        description     = "Password of VM user"
+      }
+
+      variable "pve_cluster_node"{
+        default         = false
+        description     = "Cluster node"
+      }
+
+      variable "pve_datastore"{
+        default         = false
+        description     = "Datastore for the PVE"
+      }
+
+      variable "pve_folder_path"{
+        default         = false
+        description     = "Folder path for the PVE"
+      }
+
+      variable "pve_network"{
+        default         = false
+        description     = "Network for the pve"
+      }
+
+      output "cillium-dev1_ip" {
+        value = module.cillium-dev1.ip
+      }
 deployment:
   name: shipyard-operator-controller-manager
   volumes:
@@ -193,7 +314,7 @@ deployment:
           mountPath: /terraform/
           volumeKind: emptyDir
       image: eu.gcr.io/stuttgart-things/shipyard-operator
-      tag: 23.0414.0535-v0.1.62
+      tag: 23.0420.0815-v0.1.65
       imagePullPolicy: Always
       env:
         ANSIBLE_GATHERING:
@@ -227,7 +348,6 @@ deployment:
         limits:
           cpu: 500m
           memory: 128Mi
-
     kube-rbac-proxy:
       image: gcr.io/kubebuilder/kube-rbac-proxy
       tag: v0.13.1
@@ -273,7 +393,6 @@ deployment:
   serviceAccount: shipyard-operator-controller-manager
   securityContext:
     runAsNonRoot: true
-
 services:
   shipyard-operator-controller-manager-metrics-service:
     labels:

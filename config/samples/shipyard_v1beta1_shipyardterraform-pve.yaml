@@ -1,0 +1,42 @@
+apiVersion: shipyard.sthings.tiab.ssc.sva.de/v1beta1
+kind: ShipyardTerraform
+metadata:
+  name: shipyardterraform-pve-sample
+  labels:
+    app.kubernetes.io/name: shipyardterraform
+    app.kubernetes.io/part-of: shipyard-operator
+    app.kubernetes.io/created-by: shipyard-operator
+spec:
+  variables:
+    - vsphere_vm_name="shipyard-operator-pve"
+    - vm_count=1
+    - vm_num_cpus=6
+    - vm_memory=8192
+    - vsphere_vm_template="/LabUL/host/Cluster01/10.31.101.40/ubuntu22"
+    - vsphere_vm_folder_path="phermann/rancher-things"
+    - vsphere_network="/LabUL/host/Cluster01/10.31.101.41/MGMT-10.31.101"
+    - vsphere_datastore="/LabUL/host/Cluster01/10.31.101.41/UL-ESX-SAS-01"
+    - vsphere_resource_pool="/LabUL/host/Cluster01/Resources"
+    - vsphere_datacenter="LabUL"
+  module:
+    - moduleName=shipyard-operator-pve
+    - backendKey=shipyard-operator-pve.tfstate
+    - moduleSourceUrl=https://artifacts.tiab.labda.sva.de/modules/vsphere-vm.zip
+    - backendEndpoint=https://artifacts.tiab.labda.sva.de
+    - backendRegion=main
+    - backendBucket=vsphere-vm
+    - tfProviderName=vsphere
+    - tfProviderSource=hashicorp/vsphere
+    - tfProviderVersion=2.3.1
+    - tfVersion=1.4.4
+  backend:
+    - access_key=apps/data/artifacts:rootUser
+    - secret_key=apps/data/artifacts:rootPassword
+  secrets:
+    - pve_api_url=cloud/data/pve:api_url
+    - pve_api_user=cloud/data/pve:api_user
+    - pve_api_password=cloud/data/pve:api_password
+    - vm_ssh_user=cloud/data/pve:ssh_user
+    - vm_ssh_password=cloud/data/pve:ssh_password
+  terraform-version: 1.4.5
+  template: pve-vm
