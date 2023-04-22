@@ -4,6 +4,8 @@
 
 ### Running on the cluster
 
+
+
 #### STABLE
 
 #### LATEST DEV RELEASE
@@ -36,9 +38,17 @@ EOF
 
 # Template/test
 
+export VAULT_ADDR=https://<VAULT-URL>
+export VAULT_NAMESPACE=<NAMESPACE>
+export VAULT_TOKEN=<NAMESPACE>
+
 helm template --values <(cat shipyard-operator.yaml) . | argocd-vault generate -
 
 # Install/Upgrade
+
+export VAULT_ADDR=https://<VAULT-URL>
+export VAULT_NAMESPACE=<NAMESPACE>
+export VAULT_TOKEN=<NAMESPACE>
 
 helm template -n shipyard-operator-system \
 --values <(cat dev2.yaml) . | argocd-vault generate - | kubectl apply -f -

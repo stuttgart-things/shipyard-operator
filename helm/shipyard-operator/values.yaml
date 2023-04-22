@@ -7,10 +7,11 @@ secrets:
       app.kubernetes.io/created-by: shipyard-operator
       app.kubernetes.io/instance: controller-manager
       app.kubernetes.io/part-of: shipyard-operator
+    dataType: stringData
     secretKVs:
       VAULT_TOKEN: <path:apps/data/vault#token>
       VAULT_NAMESPACE: <path:apps/data/vault#namespace>
-      VAULT_ADDR: <path:apps/data/vault#url>
+      VAULT_ADDR: <path:apps/data/vault#addr>
 configmaps:
   terraform-templates:
     vsphere-vm: |
@@ -18,7 +19,6 @@ configmaps:
         vm_count = var.vm_count
         vsphere_vm_name = var.vsphere_vm_name
         vm_num_cpus = var.vm_num_cpus
-
         vm_memory = var.vm_memory
         vm_disk_size = var.vm_disk_size
         firmware = var.firmware
@@ -169,35 +169,37 @@ configmaps:
         vm_num_cpus = var.vm_num_cpus
         vm_memory = var.vm_memory
         vm_disk_size = var.vm_disk_size
-
-        vm_template = "u22-rke2-upi"
-        source = "https://artifacts.labul.sva.de/modules/proxmox-vm.zip"
+        vm_template = var.vm_template
         pve_cluster_node = var.pve_cluster_node
         pve_datastore = var.pve_datastore
         pve_folder_path = var.pve_folder_path
         pve_network = var.pve_network
         vm_ssh_user = var.vm_ssh_user
         vm_ssh_password = var.vm_ssh_password
-        vm_notes = "PVE-VM BUILD w/ SHIPYARD FOR STUTTGART-THINGS"
+        source = "{{`{{ .moduleSourceUrl }}`}}"
+        vm_notes = "PVE-VM BUILD w/ SHIPYARD-OPERATOR FOR STUTTGART-THINGS"
       }
 
       terraform {
         backend "s3" {
-          endpoint = "https://artifacts.labul.sva.de"
-          key = "vm-cillium-dev1.tfstate"
-          region = "main"
-          bucket = "pve-vm"
+          endpoint = "{{`{{ .backendEndpoint }}`}}"
+          key = "{{`{{ .backendKey }}`}}"
+          region = "{{`{{ .backendRegion }}`}}"
+          bucket = "{{`{{ .backendBucket }}`}}"
           skip_credentials_validation = true
           skip_metadata_api_check = true
           skip_region_validation = true
           force_path_style = true
-      }
+        }
+
         required_providers {
-          proxmox = {
-            source  = "Telmate/proxmox"
-            version = "2.9.14"
+          {{`{{ .tfProviderName }}`}} = {
+            source = "{{`{{ .tfProviderSource }}`}}"
+            version = ">= {{`{{ .tfProviderVersion }}`}}"
           }
         }
+
+        required_version = ">= {{`{{ .tfVersion }}`}}"
       }
 
       provider "proxmox" {
@@ -224,8 +226,13 @@ configmaps:
       }
 
       variable "vm_disk_size" {
-        default     = "128"
+        default     = "128G"
         description = "disk size"
+      }
+
+      variable "vm_template" {
+        default     = false
+        description = "name/path of vm template"
       }
 
       variable "vm_memory" {
@@ -283,8 +290,8 @@ configmaps:
         description     = "Network for the pve"
       }
 
-      output "cillium-dev1_ip" {
-        value = module.cillium-dev1.ip
+      output "{{`{{ .moduleName }}`}}_ip" {
+        value = module.{{`{{ .moduleName }}`}}.ip
       }
 deployment:
   name: shipyard-operator-controller-manager
@@ -314,7 +321,7 @@ deployment:
           mountPath: /terraform/
           volumeKind: emptyDir
       image: eu.gcr.io/stuttgart-things/shipyard-operator
-      tag: 23.0420.0815-v0.1.65
+      tag: 23.0422.1253-v0.1.66
       imagePullPolicy: Always
       env:
         ANSIBLE_GATHERING:

@@ -8,26 +8,26 @@ metadata:
     app.kubernetes.io/created-by: shipyard-operator
 spec:
   variables:
-    - vsphere_vm_name="shipyard-operator-pve"
+    - vm_name="shipyard-operator-pve1"
     - vm_count=1
     - vm_num_cpus=6
     - vm_memory=8192
-    - vsphere_vm_template="/LabUL/host/Cluster01/10.31.101.40/ubuntu22"
-    - vsphere_vm_folder_path="phermann/rancher-things"
-    - vsphere_network="/LabUL/host/Cluster01/10.31.101.41/MGMT-10.31.101"
-    - vsphere_datastore="/LabUL/host/Cluster01/10.31.101.41/UL-ESX-SAS-01"
-    - vsphere_resource_pool="/LabUL/host/Cluster01/Resources"
-    - vsphere_datacenter="LabUL"
+    - vm_template="u22-rke2-upi"
+    - pve_network="vmbr101"
+    - pve_datastore="v3700"
+    - vm_disk_size="128G"
+    - pve_folder_path="stuttgart-things"
+    - pve_cluster_node="sthings-pve1"
   module:
-    - moduleName=shipyard-operator-pve
-    - backendKey=shipyard-operator-pve.tfstate
-    - moduleSourceUrl=https://artifacts.tiab.labda.sva.de/modules/vsphere-vm.zip
-    - backendEndpoint=https://artifacts.tiab.labda.sva.de
+    - moduleName=shipyard-operator-pve1
+    - backendKey=shipyard-operator-pve1.tfstate
+    - moduleSourceUrl=https://artifacts.app.sthings-pve.labul.sva.de/modules/proxmox-vm.zip
+    - backendEndpoint=https://artifacts.app.sthings-pve.labul.sva.de
     - backendRegion=main
-    - backendBucket=vsphere-vm
-    - tfProviderName=vsphere
-    - tfProviderSource=hashicorp/vsphere
-    - tfProviderVersion=2.3.1
+    - backendBucket=pve-vm
+    - tfProviderName=proxmox
+    - tfProviderSource=Telmate/proxmox
+    - tfProviderVersion=2.9.14
     - tfVersion=1.4.4
   backend:
     - access_key=apps/data/artifacts:rootUser
