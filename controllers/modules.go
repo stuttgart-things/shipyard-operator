@@ -49,15 +49,16 @@ func ConvertVaultSecretsInParameters(parameters []string) (updatedParameters []s
 	return
 }
 
-func VerifyVaultEnvVars() bool {
+func VerifyVaultEnvVars() (string, bool) {
 
-	if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_TOKEN", "VAULT_NAMESPACE"}) {
-		fmt.Println("VAULT SET!")
+	if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_APPROLE_ID", "VAULT_APPROLE_SECRET", "VAULT_NAMESPACE"}) {
+		return "approle", true
+	} else if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_TOKEN", "VAULT_NAMESPACE"}) {
+		return "token", true
 	} else {
-		fmt.Println("UNSET!")
+		return "missing", false
 	}
 
-	return true
 }
 
 func InitalizeTerraform(terraformDir, terraformVersion string) (tf *tfexec.Terraform) {
