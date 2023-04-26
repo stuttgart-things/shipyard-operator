@@ -94,7 +94,8 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	}
 
 	// CHECK FOR VAULT ENV VARS
-	VerifyVaultEnvVars()
+	vaultAuthType, vaultAuthFound := VerifyVaultEnvVars()
+	log.Info("⚡️ VAULT CREDENDITALS ⚡️", vaultAuthType, vaultAuthFound)
 
 	// CONVERT ALL EXISTING SECRETS IN BACKEND+MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
