@@ -321,7 +321,7 @@ deployment:
           mountPath: /terraform/
           volumeKind: emptyDir
       image: eu.gcr.io/stuttgart-things/shipyard-operator
-      tag: 23.0426.0845-v0.1.76
+      tag: 23.0426.0852-v0.1.77
       imagePullPolicy: Always
       env:
         ANSIBLE_GATHERING:
