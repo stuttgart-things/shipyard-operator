@@ -1,6 +1,6 @@
 # stuttgart-things/shipyard-operator
 
-shipyard-operator allows you to manage the lifecycle of terraform resource through custom resources
+shipyard-operator allows you to manage the lifecycle of terraform resources through custom resources.
 
 ## Getting Started
 
