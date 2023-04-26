@@ -26,6 +26,7 @@ import (
 	sthingsBase "github.com/stuttgart-things/sthingsBase"
 	"k8s.io/apimachinery/pkg/api/errors"
 
+	sthingsCli "github.com/stuttgart-things/sthingsCli"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -96,6 +97,17 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	// CHECK FOR VAULT ENV VARS
 	vaultAuthType, vaultAuthFound := VerifyVaultEnvVars()
 	log.Info("⚡️ VAULT CREDENDITALS ⚡️", vaultAuthType, vaultAuthFound)
+
+	if vaultAuthType == "approle" {
+		client, err := sthingsCli.CreateVaultClient()
+
+		if err != nil {
+			log.Error(err, "token creation (by approle) not working")
+		}
+
+		token, err := client.GetVaultTokenFromAppRole()
+		os.Setenv("VAULT_TOKEN", token)
+	}
 
 	// CONVERT ALL EXISTING SECRETS IN BACKEND+MODULE PARAMETERS
 	backend = ConvertVaultSecretsInParameters(backend)
