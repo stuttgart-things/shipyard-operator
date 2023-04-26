@@ -1,5 +1,7 @@
 # stuttgart-things/shipyard-operator
 
+shipyard-operator allows you to manage the lifecycle of terraform resource through custom resources
+
 ## Getting Started
 
 <details><summary>RUN SHIPYARD-OPERATOR W/ HELM</summary>
