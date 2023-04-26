@@ -51,7 +51,7 @@ func ConvertVaultSecretsInParameters(parameters []string) (updatedParameters []s
 
 func VerifyVaultEnvVars() (string, bool) {
 
-	if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_APPROLE_ID", "VAULT_APPROLE_SECRET", "VAULT_NAMESPACE"}) {
+	if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_ROLE_ID", "VAULT_SECRET_ID", "VAULT_NAMESPACE"}) {
 		return "approle", true
 	} else if sthingsCli.VerifyEnvVars([]string{"VAULT_ADDR", "VAULT_TOKEN", "VAULT_NAMESPACE"}) {
 		return "token", true

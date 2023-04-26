@@ -106,6 +106,11 @@ func (r *ShipyardTerraformReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		}
 
 		token, err := client.GetVaultTokenFromAppRole()
+
+		if err != nil {
+			log.Error(err, "token creation (by approle) not working")
+		}
+
 		os.Setenv("VAULT_TOKEN", token)
 	}
 
