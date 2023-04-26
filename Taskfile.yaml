@@ -108,7 +108,7 @@ tasks:
     deps: [build-image, package]
     cmds:
       - helm push {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}-helm.tgz oci://{{ .REGISTRY }}/{{ .REPOSITORY_NAME }}
-      - rm -rf {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}.tgz
+      - rm -rf {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}-helm.tgz
     vars:
       PACKAGE:
         sh: "ls *stgz* -Art | tail -n 1"
