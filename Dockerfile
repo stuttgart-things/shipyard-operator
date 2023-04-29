@@ -67,7 +67,7 @@ FROM gcr.io/distroless/python3:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
-COPY --from=pip-env /venv /venv
+COPY --from=build-venv /venv /venv
 COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
 
