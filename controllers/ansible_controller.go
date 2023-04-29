@@ -20,6 +20,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/apenella/go-ansible/pkg/adhoc"
+	"github.com/apenella/go-ansible/pkg/options"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -50,7 +53,43 @@ type AnsibleReconciler struct {
 func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	fmt.Println("Hello Ansible!")
+	fmt.Println("Hello Ansible2!")
+
+	// TEST BLOCK BEGIN
+
+	ansibleConnectionOptions := &options.AnsibleConnectionOptions{
+		Connection: "local",
+	}
+
+	ansibleAdhocOptions := &adhoc.AnsibleAdhocOptions{
+		Inventory:  "127.0.0.1,",
+		ModuleName: "debug",
+		Args: `msg="
+{{ arg1 }}
+{{ arg2 }}
+{{ arg3 }}
+"`,
+		ExtraVars: map[string]interface{}{
+			"arg1": map[string]interface{}{"subargument": "subargument_value"},
+			"arg2": "arg2_value",
+			"arg3": "arg3_value",
+		},
+	}
+
+	adhoc := &adhoc.AnsibleAdhocCmd{
+		Pattern:           "all",
+		Options:           ansibleAdhocOptions,
+		ConnectionOptions: ansibleConnectionOptions,
+		//StdoutCallback:    "oneline",
+	}
+
+	fmt.Println("Command: ", adhoc)
+
+	err := adhoc.Run(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+	// TEST BLOCK END
 
 	return ctrl.Result{}, nil
 }
