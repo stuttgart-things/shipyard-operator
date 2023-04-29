@@ -8,6 +8,32 @@ rules:
 - apiGroups:
   - shipyard.sthings.tiab.ssc.sva.de
   resources:
+  - ansibles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - shipyard.sthings.tiab.ssc.sva.de
+  resources:
+  - ansibles/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - shipyard.sthings.tiab.ssc.sva.de
+  resources:
+  - ansibles/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - shipyard.sthings.tiab.ssc.sva.de
+  resources:
   - shipyardterraforms
   verbs:
   - create
