@@ -321,7 +321,7 @@ deployment:
           mountPath: /terraform/
           volumeKind: emptyDir
       image: eu.gcr.io/stuttgart-things/shipyard-operator
-      tag: 23.0429.1628-v0.1.80
+      tag: 23.0429.1650-v0.1.81
       imagePullPolicy: Always
       env:
         ANSIBLE_GATHERING:
@@ -503,6 +503,32 @@ clusterRoles:
       app.kubernetes.io/name: clusterrole
       app.kubernetes.io/part-of: shipyard-operator
     rules:
+      - apiGroups:
+          - shipyard.sthings.tiab.ssc.sva.de
+        resources:
+          - ansibles
+        verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+      - apiGroups:
+          - shipyard.sthings.tiab.ssc.sva.de
+        resources:
+          - ansibles/finalizers
+        verbs:
+          - update
+      - apiGroups:
+          - shipyard.sthings.tiab.ssc.sva.de
+        resources:
+          - ansibles/status
+        verbs:
+          - get
+          - patch
+          - update
       - apiGroups:
           - shipyard.sthings.tiab.ssc.sva.de
         resources:
