@@ -45,12 +45,19 @@ RUN apt update -qqq && \
     apt install -yqqq ca-certificates sshpass && \
     update-ca-certificates
 
+
+FROM python:3.12-bullseye AS pip-env
+
+RUN pip3 install --upgrade pip
+RUN pip3 install ansible --upgrade
+
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/python3:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
+COPY --from=build-env /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
 
