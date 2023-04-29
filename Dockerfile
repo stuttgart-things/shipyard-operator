@@ -48,7 +48,7 @@ RUN apt update -qqq && \
 
 FROM python:3.9.2 AS pip-env
 
-RUN /venv/bin/pip install --disable-pip-version-check ansible --upgrade
+RUN /venv/bin/pip3 install --disable-pip-version-check ansible --upgrade
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
