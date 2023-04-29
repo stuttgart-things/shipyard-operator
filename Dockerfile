@@ -39,10 +39,10 @@ RUN wget -O /usr/local/share/ca-certificates/labul-ca.crt ${VAULT_URL_LABUL}/v1/
     && wget -O /usr/local/share/ca-certificates/scc-ca.crt ${VAULT_URL_SSC}/v1/pki/ca/pem --no-check-certificate \
     && wget -O /usr/local/share/ca-certificates/labul-vsphere-ca.crt ${VAULT_URL_LABUL_VSPHERE}/v1/pki/ca/pem --no-check-certificate \
     && wget -O /usr/local/share/ca-certificates/labul-pve.crt ${VAULT_URL_LABUL_PVE}/v1/pki/ca/pem --no-check-certificate \
-    && wget -O /usr/local/share/ca-certificates/labul-pve.crt ${VAULT_URL_LABDA_VSPHERE}/v1/pki/ca/pem --no-check-certificate 
+    && wget -O /usr/local/share/ca-certificates/labul-pve.crt ${VAULT_URL_LABDA_VSPHERE}/v1/pki/ca/pem --no-check-certificate
 
 RUN apt update -qqq && \
-    apt install -yqqq ca-certificates && \
+    apt install -yqqq ca-certificates sshpass && \
     update-ca-certificates
 
 # Use distroless as minimal base image to package the manager binary
@@ -51,6 +51,7 @@ FROM gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
+COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]
