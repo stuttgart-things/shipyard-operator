@@ -48,8 +48,7 @@ RUN apt update -qqq && \
 
 FROM python:3.9.2 AS pip-env
 
-RUN pip3 install --upgrade pip
-RUN pip3 install ansible --upgrade
+RUN /venv/bin/pip install --disable-pip-version-check ansible --upgrade
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
@@ -57,7 +56,7 @@ FROM gcr.io/distroless/python3:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
-COPY --from=pip-env /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=pip-env /venv /venv
 COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
 
