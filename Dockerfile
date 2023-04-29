@@ -46,7 +46,18 @@ RUN apt update -qqq && \
     update-ca-certificates
 
 
-FROM python:3.9.2 AS pip-env
+FROM debian:11-slim AS build
+RUN apt-get update && \
+    apt-get install --no-install-suggests --no-install-recommends --yes python3-venv gcc libpython3-dev && \
+    python3 -m venv /venv && \
+    /venv/bin/pip install --upgrade pip setuptools wheel
+
+# Build the virtualenv as a separate step: Only re-execute this step when requirements.txt changes
+FROM build AS build-venv
+# COPY requirements.txt /requirements.txt
+# RUN /venv/bin/pip install --disable-pip-version-check -r /requirements.txt
+
+# FROM python:3.9.2 AS pip-env
 
 RUN /venv/bin/pip3 install --disable-pip-version-check ansible --upgrade
 
