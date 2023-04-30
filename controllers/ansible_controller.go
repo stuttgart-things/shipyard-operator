@@ -57,10 +57,15 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	_ = log.FromContext(ctx)
 
 	// TEST BLOCK BEGIN
-	os.Setenv("ANSIBLE_LOCAL_TEMP", "ansible")
-	// os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp/ansible")
 
 	fmt.Println("Hello Ansible2!")
+
+	if err := os.Mkdir("a", os.ModePerm); err != nil {
+		fmt.Println(err)
+	}
+
+	os.Setenv("ANSIBLE_LOCAL_TEMP", "/a")
+	os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp/")
 
 	ansiblePlaybookConnectionOptions := &options.AnsibleConnectionOptions{
 		User: "sthings",
