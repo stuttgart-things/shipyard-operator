@@ -78,6 +78,7 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	adhoc := &adhoc.AnsibleAdhocCmd{
 		Pattern:           "all",
+		Binary:            "/venv/bin/ansible",
 		Options:           ansibleAdhocOptions,
 		ConnectionOptions: ansibleConnectionOptions,
 		//StdoutCallback:    "oneline",
