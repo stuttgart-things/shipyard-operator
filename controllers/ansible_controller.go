@@ -60,7 +60,7 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	fmt.Println("Hello Ansible2!")
 
-	if err := os.Mkdir("a", os.ModePerm); err != nil {
+	if err := os.Mkdir("terraform/tmp", os.ModePerm); err != nil {
 		fmt.Println(err)
 	}
 
