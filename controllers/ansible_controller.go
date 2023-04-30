@@ -19,14 +19,9 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"os"
 
-	"github.com/apenella/go-ansible/pkg/execute"
+	"github.com/apenella/go-ansible/pkg/adhoc"
 	"github.com/apenella/go-ansible/pkg/options"
-	"github.com/apenella/go-ansible/pkg/playbook"
-	"github.com/apenella/go-ansible/pkg/stdoutcallback/results"
-	sthingsBase "github.com/stuttgart-things/sthingsBase"
-
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -66,49 +61,48 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Info("⚡️ Event received! ⚡️")
 	log.Info("Request: ", "req", req)
 
-	log.Info("⚡️ Creating working dir and project files ⚡️")
-	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
+	// log.Info("⚡️ Creating working dir and project files ⚡️")
+	// sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
 
-	os.Setenv("ANSIBLE_LOCAL_TEMP", workingDir)
-	os.Setenv("ANSIBLE_REMOTE_TMP", workingDir)
-	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
+	// os.Setenv("ANSIBLE_LOCAL_TEMP", workingDir)
+	// os.Setenv("ANSIBLE_REMOTE_TMP", workingDir)
+	// os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
+	// TEST BLOCK BEGIN
 
-	ansiblePlaybookConnectionOptions := &options.AnsibleConnectionOptions{
-		User:       "65532",
+	ansibleConnectionOptions := &options.AnsibleConnectionOptions{
 		Connection: "local",
 	}
 
-	ansiblePlaybookOptions := &playbook.AnsiblePlaybookOptions{
-		Inventory: "127.0.0.1,",
+	ansibleAdhocOptions := &adhoc.AnsibleAdhocOptions{
+		Inventory:  "127.0.0.1,",
+		ModuleName: "debug",
+		Args: `msg="
+{{ arg1 }}
+{{ arg2 }}
+{{ arg3 }}
+"`,
 		ExtraVars: map[string]interface{}{
-			// "ansible_password":   "Atlan7is",
-			// "ansible_remote_tmp": workingDir,
+			"arg1": map[string]interface{}{"subargument": "subargument_value"},
+			"arg2": "arg2_value",
+			"arg3": "arg3_value",
 		},
 	}
 
-	ansiblePlaybookPrivilegeEscalationOptions := &options.AnsiblePrivilegeEscalationOptions{
-		Become:        false,
-		AskBecomePass: false,
+	adhoc := &adhoc.AnsibleAdhocCmd{
+		Pattern:           "all",
+		Binary:            "/venv/bin/ansible",
+		Options:           ansibleAdhocOptions,
+		ConnectionOptions: ansibleConnectionOptions,
+		//StdoutCallback:    "oneline",
 	}
 
-	playbook := &playbook.AnsiblePlaybookCmd{
-		Playbooks:                  []string{"terraform/play"},
-		ConnectionOptions:          ansiblePlaybookConnectionOptions,
-		PrivilegeEscalationOptions: ansiblePlaybookPrivilegeEscalationOptions,
-		Options:                    ansiblePlaybookOptions,
-		Binary:                     "/venv/bin/ansible-playbook",
-		Exec: execute.NewDefaultExecute(
-			execute.WithEnvVar("ANSIBLE_FORCE_COLOR", "true"),
-			execute.WithTransformers(
-				results.Prepend("Go-ansible example with become"),
-			),
-		),
-	}
+	fmt.Println("Command: ", adhoc)
 
-	err := playbook.Run(context.TODO())
+	err := adhoc.Run(context.TODO())
 	if err != nil {
 		panic(err)
 	}
+	// TEST BLOCK END
 
 	// TEST BLOCK END
 	// ANSIBLE_ROLES_PATH
