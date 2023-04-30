@@ -25,13 +25,14 @@ import (
 	"github.com/apenella/go-ansible/pkg/options"
 	"github.com/apenella/go-ansible/pkg/playbook"
 	"github.com/apenella/go-ansible/pkg/stdoutcallback/results"
+	sthingsBase "github.com/stuttgart-things/sthingsBase"
 
+	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
+	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // AnsibleReconciler reconciles a Ansible object
@@ -39,6 +40,8 @@ type AnsibleReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
+
+var workingDir = "/tmp/ansible"
 
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=ansibles,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=ansibles/status,verbs=get;update;patch
@@ -59,11 +62,12 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// TEST BLOCK BEGIN
 
 	fmt.Println("Hello Ansible2!")
+	log := ctrllog.FromContext(ctx)
+	log.Info("⚡️ Event received! ⚡️")
+	log.Info("Request: ", "req", req)
 
-	fmt.Println("CREATING DIR terraform/tmp")
-	if err := os.Mkdir("terraform/tmp", os.ModePerm); err != nil {
-		fmt.Println(err)
-	}
+	log.Info("⚡️ Creating working dir and project files ⚡️")
+	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
 
 	os.Setenv("ANSIBLE_LOCAL_TEMP", "/a")
 	os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp/")
