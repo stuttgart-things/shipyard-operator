@@ -80,7 +80,7 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		ConnectionOptions:          ansiblePlaybookConnectionOptions,
 		PrivilegeEscalationOptions: ansiblePlaybookPrivilegeEscalationOptions,
 		Options:                    ansiblePlaybookOptions,
-		Binary:                     "/venv/bin/ansible",
+		Binary:                     "/venv/bin/ansible-playbook",
 		Exec: execute.NewDefaultExecute(
 			execute.WithEnvVar("ANSIBLE_FORCE_COLOR", "true"),
 			execute.WithTransformers(
