@@ -20,8 +20,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/apenella/go-ansible/pkg/adhoc"
+	"github.com/apenella/go-ansible/pkg/execute"
 	"github.com/apenella/go-ansible/pkg/options"
+	"github.com/apenella/go-ansible/pkg/playbook"
+	"github.com/apenella/go-ansible/pkg/stdoutcallback/results"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -53,44 +55,47 @@ type AnsibleReconciler struct {
 func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	fmt.Println("Hello Ansible2!")
-
 	// TEST BLOCK BEGIN
 
-	ansibleConnectionOptions := &options.AnsibleConnectionOptions{
-		Connection: "local",
+	fmt.Println("Hello Ansible2!")
+
+	ansiblePlaybookConnectionOptions := &options.AnsibleConnectionOptions{
+		User: "sthings",
 	}
 
-	ansibleAdhocOptions := &adhoc.AnsibleAdhocOptions{
-		Inventory:  "127.0.0.1,",
-		ModuleName: "debug",
-		Args: `msg="
-{{ arg1 }}
-{{ arg2 }}
-{{ arg3 }}
-"`,
+	ansiblePlaybookOptions := &playbook.AnsiblePlaybookOptions{
+		Inventory: "elastic-vm1.tiab.labda.sva.de,",
 		ExtraVars: map[string]interface{}{
-			"arg1": map[string]interface{}{"subargument": "subargument_value"},
-			"arg2": "arg2_value",
-			"arg3": "arg3_value",
+			"ansible_password": "Atlan7is",
 		},
 	}
 
-	adhoc := &adhoc.AnsibleAdhocCmd{
-		Pattern:           "all",
-		Binary:            "/venv/bin/ansible",
-		Options:           ansibleAdhocOptions,
-		ConnectionOptions: ansibleConnectionOptions,
-		//StdoutCallback:    "oneline",
+	ansiblePlaybookPrivilegeEscalationOptions := &options.AnsiblePrivilegeEscalationOptions{
+		Become:        true,
+		AskBecomePass: false,
 	}
 
-	fmt.Println("Command: ", adhoc)
+	playbook := &playbook.AnsiblePlaybookCmd{
+		Playbooks:                  []string{"terraform/play"},
+		ConnectionOptions:          ansiblePlaybookConnectionOptions,
+		PrivilegeEscalationOptions: ansiblePlaybookPrivilegeEscalationOptions,
+		Options:                    ansiblePlaybookOptions,
+		Binary:                     "/venv/bin/ansible",
+		Exec: execute.NewDefaultExecute(
+			execute.WithEnvVar("ANSIBLE_FORCE_COLOR", "true"),
+			execute.WithTransformers(
+				results.Prepend("Go-ansible example with become"),
+			),
+		),
+	}
 
-	err := adhoc.Run(context.TODO())
+	err := playbook.Run(context.TODO())
 	if err != nil {
 		panic(err)
 	}
+
 	// TEST BLOCK END
+	// ANSIBLE_ROLES_PATH
 
 	return ctrl.Result{}, nil
 }
