@@ -74,14 +74,15 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 
 	ansiblePlaybookConnectionOptions := &options.AnsibleConnectionOptions{
-		User: "sthings",
+		User:       "65532",
+		Connection: "local",
 	}
 
 	ansiblePlaybookOptions := &playbook.AnsiblePlaybookOptions{
-		Inventory: "elastic-vm1.tiab.labda.sva.de,",
+		Inventory: "127.0.0.1,",
 		ExtraVars: map[string]interface{}{
-			"ansible_password":   "Atlan7is",
-			"ansible_remote_tmp": workingDir,
+			// "ansible_password":   "Atlan7is",
+			// "ansible_remote_tmp": workingDir,
 		},
 	}
 
