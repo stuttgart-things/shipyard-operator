@@ -69,7 +69,7 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Info("⚡️ Creating working dir and project files ⚡️")
 	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
 
-	os.Setenv("ANSIBLE_LOCAL_TEMP", "/a")
+	os.Setenv("ANSIBLE_LOCAL_TEMP", "/tmp/ansible")
 	os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp/")
 
 	ansiblePlaybookConnectionOptions := &options.AnsibleConnectionOptions{
