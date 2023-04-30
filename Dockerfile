@@ -50,7 +50,7 @@ FROM debian:11-slim AS build
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends --yes python3-venv gcc libpython3-dev && \
     python3 -m venv /venv && \
-    /venv/bin/pip install --upgrade pip setuptools wheel
+    /venv/bin/pip install --upgrade pip setuptools wheel && mkdir ansible && chmod 777 ansible
 
 # Build the virtualenv as a separate step: Only re-execute this step when requirements.txt changes
 FROM build AS build-venv
@@ -68,8 +68,8 @@ WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
 COPY --from=build-venv /venv /venv
+COPY --from=build-venv /ansible /ansible
 COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
-RUN mkdir ansible && chmod 777 ansible
 
 ENTRYPOINT ["/manager"]
