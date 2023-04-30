@@ -57,8 +57,8 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	_ = log.FromContext(ctx)
 
 	// TEST BLOCK BEGIN
-	os.Setenv("ANSIBLE_LOCAL_TEMP", "/tmp/ansible")
-	os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp/ansible")
+	os.Setenv("ANSIBLE_LOCAL_TEMP", "ansible")
+	// os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp/ansible")
 
 	fmt.Println("Hello Ansible2!")
 
