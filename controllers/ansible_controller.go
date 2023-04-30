@@ -71,6 +71,7 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	os.Setenv("ANSIBLE_LOCAL_TEMP", workingDir)
 	os.Setenv("ANSIBLE_REMOTE_TMP", workingDir)
+	os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
 
 	ansiblePlaybookConnectionOptions := &options.AnsibleConnectionOptions{
 		User: "sthings",
