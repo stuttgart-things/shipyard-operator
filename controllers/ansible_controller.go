@@ -41,7 +41,7 @@ type AnsibleReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-var workingDir = "/tmp/ansible"
+var workingDir = "/tmp/.ansible/tmp"
 
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=ansibles,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=ansibles/status,verbs=get;update;patch
@@ -70,7 +70,7 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
 
 	os.Setenv("ANSIBLE_LOCAL_TEMP", workingDir)
-	// os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp/")
+	os.Setenv("ANSIBLE_REMOTE_TMP", workingDir)
 
 	ansiblePlaybookConnectionOptions := &options.AnsibleConnectionOptions{
 		User: "sthings",
@@ -79,12 +79,13 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ansiblePlaybookOptions := &playbook.AnsiblePlaybookOptions{
 		Inventory: "elastic-vm1.tiab.labda.sva.de,",
 		ExtraVars: map[string]interface{}{
-			"ansible_password": "Atlan7is",
+			"ansible_password":   "Atlan7is",
+			"ansible_remote_tmp": workingDir,
 		},
 	}
 
 	ansiblePlaybookPrivilegeEscalationOptions := &options.AnsiblePrivilegeEscalationOptions{
-		Become:        true,
+		Become:        false,
 		AskBecomePass: false,
 	}
 
