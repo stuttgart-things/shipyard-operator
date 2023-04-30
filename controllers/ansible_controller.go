@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/apenella/go-ansible/pkg/execute"
 	"github.com/apenella/go-ansible/pkg/options"
@@ -56,6 +57,8 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	_ = log.FromContext(ctx)
 
 	// TEST BLOCK BEGIN
+	os.Setenv("ANSIBLE_LOCAL_TEMP", "/tmp")
+	os.Setenv("ANSIBLE_REMOTE_TMP", "/tmp")
 
 	fmt.Println("Hello Ansible2!")
 
