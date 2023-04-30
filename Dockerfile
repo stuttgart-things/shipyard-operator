@@ -70,5 +70,6 @@ COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
 COPY --from=build-venv /venv /venv
 COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
+RUN mkdir ansible && chmod 777 ansible
 
 ENTRYPOINT ["/manager"]
