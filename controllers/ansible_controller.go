@@ -70,21 +70,14 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// TEST BLOCK BEGIN
 
 	ansibleConnectionOptions := &options.AnsibleConnectionOptions{
-		Connection: "local",
+		//Connection: "local",
 	}
 
 	ansibleAdhocOptions := &adhoc.AnsibleAdhocOptions{
-		Inventory:  "127.0.0.1,",
-		ModuleName: "debug",
-		Args: `msg="
-{{ arg1 }}
-{{ arg2 }}
-{{ arg3 }}
-"`,
+		Inventory:  "10.100.136.123,",
+		ModuleName: "setup",
 		ExtraVars: map[string]interface{}{
 			"arg1": map[string]interface{}{"subargument": "subargument_value"},
-			"arg2": "arg2_value",
-			"arg3": "arg3_value",
 		},
 	}
 
@@ -102,6 +95,7 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err != nil {
 		panic(err)
 	}
+
 	// TEST BLOCK END
 
 	// TEST BLOCK END
