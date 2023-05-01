@@ -42,7 +42,7 @@ RUN wget -O /usr/local/share/ca-certificates/labul-ca.crt ${VAULT_URL_LABUL}/v1/
     && wget -O /usr/local/share/ca-certificates/labul-pve.crt ${VAULT_URL_LABDA_VSPHERE}/v1/pki/ca/pem --no-check-certificate
 
 RUN apt update -qqq && \
-    apt install -yqqq ca-certificates sshpass && \
+    apt install -yqqq ca-certificates openssh-client sshpass && \
     update-ca-certificates
 
 
@@ -69,6 +69,7 @@ COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
 COPY --from=build-venv /venv /venv
 COPY --from=build-venv /ansible /ansible
+COPY --from=cert-env /usr/bin/ssh /usr/bin/ssh
 COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
 
