@@ -35,7 +35,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -81,12 +80,12 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		clusterConfig, err = rest.InClusterConfig()
 	}
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err)
 	}
 
 	clusterClient, err := dynamic.NewForConfig(clusterConfig)
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err)
 	}
 
 	resource := schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "jobs"}
