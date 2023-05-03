@@ -19,9 +19,21 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"sync"
+	"time"
 
-	"github.com/apenella/go-ansible/pkg/adhoc"
-	"github.com/apenella/go-ansible/pkg/options"
+	v1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/clientcmd"
+
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,8 +47,6 @@ type AnsibleReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
-
-var workingDir = "/tmp/.ansible/tmp"
 
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=ansibles,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=shipyard.sthings.tiab.ssc.sva.de,resources=ansibles/status,verbs=get;update;patch
@@ -61,40 +71,113 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Info("⚡️ Event received! ⚡️")
 	log.Info("Request: ", "req", req)
 
-	// log.Info("⚡️ Creating working dir and project files ⚡️")
-	// sthingsBase.CreateNestedDirectoryStructure(workingDir, 0777)
+	kubeConfig := os.Getenv("KUBECONFIG")
 
-	// os.Setenv("ANSIBLE_LOCAL_TEMP", workingDir)
-	// os.Setenv("ANSIBLE_REMOTE_TMP", workingDir)
-	// os.Setenv("ANSIBLE_HOST_KEY_CHECKING", "False")
-	// TEST BLOCK BEGIN
-
-	ansibleConnectionOptions := &options.AnsibleConnectionOptions{
-		//Connection: "local",
+	var clusterConfig *rest.Config
+	var err error
+	if kubeConfig != "" {
+		clusterConfig, err = clientcmd.BuildConfigFromFlags("", kubeConfig)
+	} else {
+		clusterConfig, err = rest.InClusterConfig()
 	}
-
-	ansibleAdhocOptions := &adhoc.AnsibleAdhocOptions{
-		Inventory:  "10.100.136.123,",
-		ModuleName: "setup",
-		ExtraVars: map[string]interface{}{
-			"arg1": map[string]interface{}{"subargument": "subargument_value"},
-		},
-	}
-
-	adhoc := &adhoc.AnsibleAdhocCmd{
-		Pattern:           "all",
-		Binary:            "/venv/bin/ansible",
-		Options:           ansibleAdhocOptions,
-		ConnectionOptions: ansibleConnectionOptions,
-		//StdoutCallback:    "oneline",
-	}
-
-	fmt.Println("Command: ", adhoc)
-
-	err := adhoc.Run(context.TODO())
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
+
+	clusterClient, err := dynamic.NewForConfig(clusterConfig)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resource := schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "jobs"}
+
+	// listOp := metav1.ListOptions{
+	// 	FieldSelector: "spec.nodeName=u23-rke2-126-3",
+	// }
+
+	// listOpfunc := dynamicinformer.TweakListOptionsFunc(func(options *metav1.ListOptions) { *options = listOp })
+	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(clusterClient, time.Minute, corev1.NamespaceAll, nil)
+	informer := factory.ForResource(resource).Informer()
+
+	mux := &sync.RWMutex{}
+	synced := false
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			mux.RLock()
+			defer mux.RUnlock()
+			if !synced {
+				return
+			}
+
+			fmt.Println("ADDED!")
+			// fmt.Println(obj)
+
+			// createdUnstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+			// fmt.Println(err)
+
+			// var job *v1.Job
+
+			// err = runtime.DefaultUnstructuredConverter.FromUnstructured(createdUnstructuredObj, &job)
+			// if err != nil {
+			// 	log.Fatal(err)
+			// }
+
+			// fmt.Println("STATUS", job.Status)
+
+			// Handler logic
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			mux.RLock()
+			defer mux.RUnlock()
+			if !synced {
+				return
+			}
+
+			fmt.Println("UPDATED!")
+
+			createdUnstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(newObj)
+			fmt.Println(err)
+
+			var job *v1.Job
+
+			err = runtime.DefaultUnstructuredConverter.FromUnstructured(createdUnstructuredObj, &job)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			fmt.Println("STATUS", job.Status.Active)
+
+			if job.Status.Active == 0 {
+				fmt.Println("JOB IS DONE!")
+			}
+
+		},
+		DeleteFunc: func(obj interface{}) {
+			mux.RLock()
+			defer mux.RUnlock()
+			if !synced {
+				return
+			}
+
+			fmt.Println("DELETED!")
+		},
+	})
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	go informer.Run(ctx.Done())
+
+	isSynced := cache.WaitForCacheSync(ctx.Done(), informer.HasSynced)
+	mux.Lock()
+	synced = isSynced
+	mux.Unlock()
+
+	if !isSynced {
+		fmt.Println("failed to sync")
+	}
+
+	<-ctx.Done()
 
 	// TEST BLOCK END
 
