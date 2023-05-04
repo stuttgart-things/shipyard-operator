@@ -63,18 +63,12 @@ type AnsibleReconciler struct {
 func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TEST BLOCK BEGIN
-
-	fmt.Println("Hello Ansible2!")
 	log := ctrllog.FromContext(ctx)
 	log.Info("⚡️ Event received! ⚡️")
 	log.Info("Request: ", "req", req)
 
-	// TEST BLOCK END
-
-	// TEST BLOCK END
-	// ANSIBLE_ROLES_PATH
-	watchJobs()
+	// createJob
+	watchJobExecution("countdown")
 
 	return ctrl.Result{}, nil
 }
@@ -86,27 +80,25 @@ func (r *AnsibleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func watchJobs() {
+func watchJobExecution(jobName string) {
 	timeOut := int64(60)
 	watcher, _ := clientset.BatchV1().Jobs("").Watch(context.Background(), metav1.ListOptions{TimeoutSeconds: &timeOut})
 
-L:
+Jobs:
 	for event := range watcher.ResultChan() {
 		item := event.Object.(*batchv1.Job)
-
-		fmt.Println(event.Type)
 
 		switch event.Type {
 		case watch.Modified:
 
 			fmt.Println(item.GetName)
-			if item.Name == "countdown" {
+			if item.Name == jobName {
 
 				fmt.Println(item.Status.Active)
 
 				if item.Status.Active == 0 {
 					fmt.Println("JOB IS FINISHED!")
-					break L
+					break Jobs
 				}
 
 			}
@@ -115,21 +107,9 @@ L:
 		case watch.Error:
 		case watch.Deleted:
 		case watch.Added:
-			// if processJob(item.GetName()) {
-			// 	break L
-			// }
+
 		}
 	}
 
-	fmt.Println("WHATEVE>R!")
-}
-
-func processJob(Job string) {
-	fmt.Println("Some processing for newly created Job : ", Job)
-
-	// if Job == "kube-node-lease" {
-	// 	fmt.Println("HELLO")
-	// 	return true
-	// }
-
+	fmt.Println("END OF WATCHING ANSIBLE EXECUTION")
 }
