@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	v1 "k8s.io/api/batch/v1"
@@ -148,6 +149,8 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 			if job.Status.Active == 0 {
 				fmt.Println("JOB IS DONE!")
+				fmt.Println("END OF WATCH!")
+				syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 			}
 
 		},
