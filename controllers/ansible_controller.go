@@ -68,7 +68,9 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Info("Request: ", "req", req)
 
 	// createJob
-	watchJobExecution("countdown")
+	if watchJobExecution("countdown") {
+		fmt.Println("LETS HOPE FOR NO RESTART")
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -80,7 +82,7 @@ func (r *AnsibleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func watchJobExecution(jobName string) {
+func watchJobExecution(jobName string) (jobSuccessful bool) {
 	timeOut := int64(60)
 	watcher, _ := clientset.BatchV1().Jobs("").Watch(context.Background(), metav1.ListOptions{TimeoutSeconds: &timeOut})
 
@@ -98,6 +100,7 @@ Jobs:
 
 				if item.Status.Active == 0 {
 					fmt.Println("JOB IS FINISHED!")
+					return true
 					break Jobs
 				}
 
@@ -112,4 +115,5 @@ Jobs:
 	}
 
 	fmt.Println("END OF WATCHING ANSIBLE EXECUTION")
+	return jobSuccessful
 }
