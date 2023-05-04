@@ -3,11 +3,11 @@ apiVersion: v2
 name: shipyard-operator
 description: A Helm chart for Kubernetes
 type: application
-version: v0.1.121
-appVersion: v0.1.121
+version: v0.1.122
+appVersion: v0.1.122
 
 dependencies:
 - name: sthings-helm-toolkit
-  version: v0.1.121
+  version: v0.1.122
   repository: oci://eu.gcr.io/stuttgart-things
   #repository: file://../../../sthings-helm-toolkit
