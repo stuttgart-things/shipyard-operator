@@ -20,18 +20,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
-	"sync"
-	"time"
 
-	v1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/dynamic/dynamicinformer"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/cache"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
 	shipyardv1beta1 "github.com/stuttgart-things/shipyard-operator/api/v1beta1"
@@ -39,6 +34,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
+)
+
+var (
+	config, _    = clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
+	clientset, _ = kubernetes.NewForConfig(config)
 )
 
 // AnsibleReconciler reconciles a Ansible object
@@ -70,120 +70,11 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Info("⚡️ Event received! ⚡️")
 	log.Info("Request: ", "req", req)
 
-	kubeConfig := os.Getenv("KUBECONFIG")
-
-	var clusterConfig *rest.Config
-	var err error
-	if kubeConfig != "" {
-		clusterConfig, err = clientcmd.BuildConfigFromFlags("", kubeConfig)
-	} else {
-		clusterConfig, err = rest.InClusterConfig()
-	}
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	clusterClient, err := dynamic.NewForConfig(clusterConfig)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	resource := schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "jobs"}
-
-	// listOp := metav1.ListOptions{
-	// 	FieldSelector: "spec.nodeName=u23-rke2-126-3",
-	// }
-
-	// listOpfunc := dynamicinformer.TweakListOptionsFunc(func(options *metav1.ListOptions) { *options = listOp })
-	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(clusterClient, time.Minute, corev1.NamespaceAll, nil)
-	informer := factory.ForResource(resource).Informer()
-
-	mux := &sync.RWMutex{}
-	synced := false
-	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			mux.RLock()
-			defer mux.RUnlock()
-			if !synced {
-				return
-			}
-
-			fmt.Println("ADDED!")
-			// fmt.Println(obj)
-
-			// createdUnstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-			// fmt.Println(err)
-
-			// var job *v1.Job
-
-			// err = runtime.DefaultUnstructuredConverter.FromUnstructured(createdUnstructuredObj, &job)
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
-
-			// fmt.Println("STATUS", job.Status)
-
-			// Handler logic
-		},
-		UpdateFunc: func(oldObj, newObj interface{}) {
-			mux.RLock()
-			defer mux.RUnlock()
-			if !synced {
-				return
-			}
-
-			fmt.Println("UPDATED!")
-
-			createdUnstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(newObj)
-			fmt.Println(err)
-
-			var job *v1.Job
-
-			err = runtime.DefaultUnstructuredConverter.FromUnstructured(createdUnstructuredObj, &job)
-			if err != nil {
-				fmt.Println(err)
-			}
-
-			fmt.Println("STATUS", job.Status.Active)
-
-			if job.Status.Active == 0 {
-				fmt.Println("JOB IS DONE!")
-				fmt.Println("END OF WATCH!")
-				ctx.Done()
-			}
-
-		},
-		DeleteFunc: func(obj interface{}) {
-			mux.RLock()
-			defer mux.RUnlock()
-			if !synced {
-				return
-			}
-
-			fmt.Println("DELETED!")
-		},
-	})
-
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
-	go informer.Run(ctx.Done())
-
-	isSynced := cache.WaitForCacheSync(ctx.Done(), informer.HasSynced)
-	mux.Lock()
-	synced = isSynced
-	mux.Unlock()
-
-	if !isSynced {
-		fmt.Println("failed to sync")
-	}
-
-	<-ctx.Done()
-
 	// TEST BLOCK END
 
 	// TEST BLOCK END
 	// ANSIBLE_ROLES_PATH
+	watchJobs()
 
 	return ctrl.Result{}, nil
 }
@@ -193,4 +84,52 @@ func (r *AnsibleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&shipyardv1beta1.Ansible{}).
 		Complete(r)
+}
+
+func watchJobs() {
+	timeOut := int64(60)
+	watcher, _ := clientset.BatchV1().Jobs("").Watch(context.Background(), metav1.ListOptions{TimeoutSeconds: &timeOut})
+
+L:
+	for event := range watcher.ResultChan() {
+		item := event.Object.(*batchv1.Job)
+
+		fmt.Println(event.Type)
+
+		switch event.Type {
+		case watch.Modified:
+
+			fmt.Println(item.GetName)
+			if item.Name == "countdown" {
+
+				fmt.Println(item.Status.Active)
+
+				if item.Status.Active == 0 {
+					fmt.Println("JOB IS FINISHED!")
+					break L
+				}
+
+			}
+
+		case watch.Bookmark:
+		case watch.Error:
+		case watch.Deleted:
+		case watch.Added:
+			// if processJob(item.GetName()) {
+			// 	break L
+			// }
+		}
+	}
+
+	fmt.Println("WHATEVE>R!")
+}
+
+func processJob(Job string) {
+	fmt.Println("Some processing for newly created Job : ", Job)
+
+	// if Job == "kube-node-lease" {
+	// 	fmt.Println("HELLO")
+	// 	return true
+	// }
+
 }
