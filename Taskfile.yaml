@@ -56,7 +56,7 @@ tasks:
       - git add *
       - git commit -am 'updated {{ .PROJECT_NAME }} {{ .DATE }} for tag version {{ .UPDATED_TAG_VERSION }}'
       - git push
-      - git tag -a {{ .UPDATED_TAG_VERSION }} -m 'updated for stuttgart-things {{.DATE}} for tag version {{ .UPDATED_TAG_VERSION }}'
+      - git tag -a {{ .UPDATED_TAG_VERSION }} -m 'updated for stuttgart-things {{ .DATE }} for tag version {{ .UPDATED_TAG_VERSION }}'
       - git push origin --tags
 
   build-image:
