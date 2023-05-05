@@ -45,32 +45,13 @@ RUN apt update -qqq && \
     apt install -yqqq ca-certificates openssh-client sshpass && \
     update-ca-certificates
 
-
-FROM debian:11-slim AS build
-RUN apt-get update && \
-    apt-get install --no-install-suggests --no-install-recommends --yes python3-venv gcc libpython3-dev && \
-    python3 -m venv /venv && \
-    /venv/bin/pip install --upgrade pip setuptools wheel && mkdir ansible && chmod 777 ansible
-
-# Build the virtualenv as a separate step: Only re-execute this step when requirements.txt changes
-FROM build AS build-venv
-# COPY requirements.txt /requirements.txt
-# RUN /venv/bin/pip install --disable-pip-version-check -r /requirements.txt
-
-# FROM python:3.9.2 AS pip-env
-
-RUN /venv/bin/pip3 install --disable-pip-version-check ansible --upgrade
-
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/python3:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
-COPY --from=build-venv /venv /venv
 COPY --from=build-venv /ansible /ansible
-COPY --from=cert-env /usr/bin/ssh /usr/bin/ssh
-COPY --from=cert-env /usr/bin/sshpass /usr/bin/sshpass
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]
