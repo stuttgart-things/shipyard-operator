@@ -51,7 +51,6 @@ FROM gcr.io/distroless/python3:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=cert-env /etc/ssl/certs /etc/ssl/certs
-COPY --from=build-venv /ansible /ansible
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]
