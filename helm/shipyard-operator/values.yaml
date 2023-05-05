@@ -13,6 +13,12 @@ secrets:
       VAULT_NAMESPACE: <path:apps/data/vault#namespace>
       VAULT_ADDR: <path:apps/data/vault#addr>
 configmaps:
+  ansible-test:
+    playbook: ""
+    inventory: |
+      elastic-vm1.tiab.labda.sva.de
+    ansible-cfg: ""
+configmaps:
   terraform-templates:
     play: |
       ---
@@ -332,7 +338,7 @@ deployment:
           mountPath: /terraform/
           volumeKind: emptyDir
       image: eu.gcr.io/stuttgart-things/shipyard-operator
-      tag: 23.0505.0616-v0.1.124
+      tag: 23.0505.1235-v0.1.125
       imagePullPolicy: Always
       env:
         ANSIBLE_GATHERING:
