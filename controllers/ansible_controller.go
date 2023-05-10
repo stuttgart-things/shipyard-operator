@@ -41,6 +41,77 @@ var (
 	clientset, _ = kubernetes.NewForConfig(config)
 )
 
+type AnsibleJob struct {
+	Name      string
+	Namespace string
+	Image     string
+}
+
+const AnsibleJobTemplate = `
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+  labels:
+    jobgroup: ansible
+    app: shipyard-operator
+spec:
+  template:
+    metadata:
+      name: {{ .Name }}
+      namespace: {{ .Namespace }}
+      labels:
+        jobgroup: ansible
+        app: shipyard-operator
+    spec:
+      volumes:
+        - name: ansible-templates
+          configMap:
+            name: ansible-templates
+        - name: workdir
+          emptyDir:
+            medium: Memory
+      securityContext:
+        runAsUser: 65532
+        fsGroup: 65532
+      initContainers:
+        - name: prepare-workdir
+          image: {{ .Image }}
+          args: ["cp /ansible/inventory /workdir/inventory && cat /workdir/inventory"]
+          command:
+            - sh
+            - -c
+          volumeMounts:
+            - name: ansible-templates
+              mountPath: /ansible/
+            - name: workdir
+              mountPath: /workdir/
+      containers:
+        - name: execute-ansible
+          envFrom:
+            - secretRef:
+                name: vault
+          image: {{ .Image }}
+          args: ["ansible-playbook -i /workdir/inventory /ansible/play.yaml -vv -e inventory_path=/workdir/inventory"]
+          command:
+            - sh
+            - -c
+          env:
+            - name: ANSIBLE_ROLES_PATH
+              value: "/home/nonroot/.ansible/roles"
+            - name: ANSIBLE_UNSAFE_WRITES
+              value: "1"
+            - name: ANSIBLE_HOST_KEY_CHECKING
+              value: "False"
+          volumeMounts:
+            - name: ansible-templates
+              mountPath: /ansible/
+            - name: workdir
+              mountPath: /workdir/
+      restartPolicy: Never
+`
+
 // AnsibleReconciler reconciles a Ansible object
 type AnsibleReconciler struct {
 	client.Client
@@ -68,6 +139,14 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	log.Info("Request: ", "req", req)
 
 	// createJob
+	job := AnsibleJob{
+		Name:      "baseos",
+		Namespace: "shipyard-operator-system",
+		Image:     "eu.gcr.io/stuttgart-things/sthings-ansible:7.5.0-3",
+	}
+
+	fmt.Println(job)
+
 	if watchJobExecution("countdown") {
 		fmt.Println("LETS HOPE FOR NO RESTART")
 	}

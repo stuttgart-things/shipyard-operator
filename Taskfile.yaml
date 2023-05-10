@@ -1,5 +1,6 @@
 ---
 version: "3"
+
 vars:
   REGISTRY: eu.gcr.io
   REPOSITORY_NAME: stuttgart-things
@@ -98,7 +99,7 @@ tasks:
     desc: Update Chart.yaml and package archive
     cmds:
       - git add ./helm/*/*
-      - "sed -i 's/version: .*/version: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
+      - yq e -i '.version = "{{ .UPDATED_TAG_VERSION }}"' ./helm/*/Chart.yaml
       - "sed -i 's/appVersion: .*/appVersion: {{ .UPDATED_TAG_VERSION }}/g' ./helm/*/Chart.yaml"
       - yq e -i '.deployment.containers.manager.tag = "{{ .DATE }}-{{ .UPDATED_TAG_VERSION }}"' ./helm/*/values.yaml
       - helm package ./helm/*/
@@ -111,4 +112,4 @@ tasks:
       - rm -rf {{ .PROJECT_NAME }}-{{ .UPDATED_TAG_VERSION }}.tgz
     vars:
       PACKAGE:
-        sh: "ls *stgz* -Art | tail -n 1"
+        sh: "ls *tgz* -Art | tail -n 1"

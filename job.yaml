@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ansible-base-os-2
+  namespace: shipyard-operator-system
+  labels:
+    jobgroup: ansible
+    app: shipyard-operator
+spec:
+  template:
+    metadata:
+      name: base-os
+      namespace: shipyard-operator-system
+      labels:
+        jobgroup: ansible
+        app: shipyard-operator
+    spec:
+      volumes:
+        - name: ansible-templates
+          configMap:
+            name: ansible-templates
+        - name: workdir
+          emptyDir:
+            medium: Memory
+      securityContext:
+        runAsUser: 65532
+        fsGroup: 65532
+      initContainers:
+        - name: prepare-workdir
+          image: eu.gcr.io/stuttgart-things/sthings-ansible:7.5.0-3
+          args: ["cp /ansible/inventory /workdir/inventory && cat /workdir/inventory"]
+          command:
+            - sh
+            - -c
+          volumeMounts:
+            - name: ansible-templates
+              mountPath: /ansible/
+            - name: workdir
+              mountPath: /workdir/
+      containers:
+        - name: execute-ansible
+          envFrom:
+            - secretRef:
+                name: vault
+          image: eu.gcr.io/stuttgart-things/sthings-ansible:7.5.0-3
+          args: ["ansible-playbook -i /workdir/inventory /ansible/play.yaml -vv -e inventory_path=/workdir/inventory"]
+          command:
+            - sh
+            - -c
+          env:
+            - name: ANSIBLE_ROLES_PATH
+              value: "/home/nonroot/.ansible/roles"
+            - name: ANSIBLE_UNSAFE_WRITES
+              value: "1"
+            - name: ANSIBLE_HOST_KEY_CHECKING
+              value: "False"
+          volumeMounts:
+            - name: ansible-templates
+              mountPath: /ansible/
+            - name: workdir
+              mountPath: /workdir/
+      restartPolicy: Never

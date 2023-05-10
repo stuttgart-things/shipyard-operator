@@ -1,0 +1,109 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ansible-templates
+  namespace: shipyard-operator-system
+data:
+  inventory: |
+    10.100.136.179
+
+  get-ssh-credentials.yaml: |
+    ---
+    - hosts: localhost
+      vars:
+        vault_approle_id: "{{ lookup('env', 'VAULT_ROLE_ID') }}"
+        vault_approle_secret: "{{ lookup('env', 'VAULT_SECRET_ID') }}"
+        vault_url: "{{ lookup('env', 'VAULT_ADDR') }}"
+        username: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=ssh/data/sthings:username validate_certs=false auth_method=approle role_id={{ vault_approle_id }} secret_id={{ vault_approle_secret }} url={{ vault_url }}') }}"
+        password: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=ssh/data/sthings:password validate_certs=false auth_method=approle role_id={{ vault_approle_id }} secret_id={{ vault_approle_secret }} url={{ vault_url }}') }}"
+        ansible_remote_tmp: /tmp
+        inventory_path: /ansible/inventory
+
+      tasks:
+        - name: Append vars on inventory
+          ansible.builtin.lineinfile:
+            path: "{{ inventory_path }}"
+            line: |
+
+              [all:vars]
+              ansible_user={{ username }}
+              ansible_password={{ password }}
+
+        - name: Refresh inventory
+          ansible.builtin.meta: refresh_inventory
+
+        - name: Outut
+          ansible.builtin.shell: |
+            cat {{ inventory_path }}
+
+  play.yaml: |
+    ---
+    - name: Get ssh credentials from vault + update inventory
+      ansible.builtin.import_playbook: get-ssh-credentials.yaml
+
+    - name: Execute baseos setup
+      ansible.builtin.import_playbook: baseos.yaml
+
+  baseos.yaml: |
+    ---
+    - hosts: all
+      become: true
+      gather_facts: true
+
+      vars:
+        lvm_home_sizing: '15%'
+        lvm_root_sizing: '20%'
+        lvm_var_sizing: '50%'
+        update_packages: true
+        os_packages:
+          - vim
+        vault_instances:
+          - https://vault.tiab.labda.sva.de:8200
+            #- https://vault.labul.sva.de:8200
+            #- https://vault.sthings.tiab.ssc.sva.de:8200
+          - https://vault-vsphere.labul.sva.de:8200
+          - https://vault-pve.labul.sva.de:8200
+          - https://vault-vsphere.tiab.labda.sva.de:8200
+
+      tasks:
+        - name: Install vault ca certificate to local system from multiple instances
+          ansible.builtin.include_role:
+            name: install-configure-vault
+            tasks_from: install-ca-auth
+          vars:
+            vault_url: "{{ vault_instance }}"
+            vault_install_ca_cert: true
+          loop: "{{ vault_instances }}"
+          loop_control:
+            loop_var: vault_instance
+          when: vault_instances is defined
+
+      roles:
+        - manage-filesystem
+        - install-requirements
+  create-powerdns-entry.yaml: |
+    ---
+    - hosts: localhost
+      gather_facts: no
+
+      vars:
+        pdns_api_executor: localhost
+        entry_zone: "4sthings.tiab.ssc.sva.de."
+        hostname: mgmt
+        ip_address: 10.100.136.220
+
+        pdns_create_record:
+          - fqdn: "*.{{ hostname }}.{{ entry_zone }}"
+            content: "{{ ip_address }}"
+            record_type: A
+            zone: "{{ entry_zone }}"
+            state: present
+            ttl: 60
+            note: deployed w/ sthings-k8s-operator
+
+        pdns_url: https://pdns-vsphere.tiab.labda.sva.de:8443
+        pdns_token: password123
+
+      roles:
+        - install-configure-powerdns
