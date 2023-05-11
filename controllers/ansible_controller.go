@@ -17,9 +17,11 @@ limitations under the License.
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
+	"text/template"
 
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -146,6 +148,22 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	fmt.Println(job)
+
+	tmpl, err := template.New("pipelinerun").Parse(AnsibleJobTemplate)
+	if err != nil {
+		panic(err)
+	}
+
+	var buf bytes.Buffer
+
+	err = tmpl.Execute(&buf, job)
+
+	if err != nil {
+		fmt.Println("execution: %s", err)
+	}
+
+	fmt.Println("RENDERED JOB")
+	fmt.Println(buf.String())
 
 	if watchJobExecution("countdown") {
 		fmt.Println("LETS HOPE FOR NO RESTART")
