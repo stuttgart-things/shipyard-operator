@@ -147,8 +147,6 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		Image:     "eu.gcr.io/stuttgart-things/sthings-ansible:7.5.0-3",
 	}
 
-	fmt.Println(job)
-
 	tmpl, err := template.New("pipelinerun").Parse(AnsibleJobTemplate)
 	if err != nil {
 		panic(err)
