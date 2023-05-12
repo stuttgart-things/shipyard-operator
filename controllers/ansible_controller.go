@@ -165,9 +165,9 @@ func (r *AnsibleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	fmt.Println("RENDERED JOB")
 	fmt.Println(buf.String())
 
-	if watchJobExecution("countdown") {
-		fmt.Println("LETS HOPE FOR NO RESTART")
-	}
+	// if watchJobExecution("countdown") {
+	// 	fmt.Println("LETS HOPE FOR NO RESTART")
+	// }
 
 	return ctrl.Result{}, nil
 }
